@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GW Special Quest Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gw-orange: #f97316;
+            --gw-yellow: #eab308;
+            --gw-red: #ef4444;
+            --bg-dark: #1e1b4b; /* 深い紫紺 */
+        }
+        body {
+            font-family: 'Rajdhani', 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            padding: 20px;
+        }
+
+        .no-print { max-width: 900px; margin: 0 auto 20px auto; }
+
+        /* --- チケットの基本構造 --- */
+        .quest-card {
+            width: 85mm; /* チケットらしく少しスリムに */
+            height: 145mm;
+            background: linear-gradient(135deg, #2e1065, #1e1b4b);
+            border: 2px solid var(--gw-orange);
+            border-radius: 12px;
+            padding: 6mm;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);
+            overflow: hidden;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+
+        .quest-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border: 1px dashed rgba(234, 179, 8, 0.4);
+            margin: 4px;
+            pointer-events: none;
+            border-radius: 10px;
+        }
+
+        .card-header { text-align: center; margin-bottom: 3mm; flex-shrink: 0; border-bottom: 2px solid rgba(249, 115, 22, 0.5); padding-bottom: 2mm; }
+        .quest-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 16pt; background: linear-gradient(to right, #eab308, #f97316); -webkit-background-clip: text; color: transparent; letter-spacing: 1px; line-height: 1.1; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .quest-subtitle { font-size: 7.5pt; color: #fde047; font-weight: bold; margin-top: 2px; }
+
+        .player-info {
+            display: flex; justify-content: space-between;
+            font-size: 8pt; color: #cbd5e1; margin-bottom: 3mm;
+            flex-shrink: 0; font-weight: bold;
+        }
+
+        /* 5マスのリスト形式コンテナ */
+        .mission-list { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            grid-template-rows: repeat(5, 1fr);
+            gap: 2mm; 
+            flex-grow: 1; 
+            margin-bottom: 3mm; 
+        }
+
+        .mission-cell {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(249, 115, 22, 0.4);
+            border-left: 4px solid var(--gw-orange);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.5mm 2mm;
+            position: relative; 
+            overflow: hidden;
+        }
+
+        .mission-text {
+            font-size: 8.5pt; line-height: 1.2; font-weight: 700;
+            width: 70%;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .point-badge {
+            background: var(--gw-red); color: white;
+            font-size: 7pt; font-family: 'Orbitron', sans-serif; font-weight: bold;
+            padding: 2px 4px; border-radius: 4px;
+            position: absolute; top: 1.5mm; right: 2mm;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .stamp-check {
+            width: 14mm; height: 14mm;
+            border: 1px dashed rgba(234, 179, 8, 0.5); border-radius: 50%;
+            font-size: 6px; display: flex; align-items: center; justify-content: center;
+            color: rgba(234, 179, 8, 0.5);
+            background: rgba(255,255,255,0.05);
+            margin-right: 1mm;
+            margin-top: 3mm; /* ポイントバッジの下に配置 */
+            flex-shrink: 0;
+        }
+
+        .card-footer { 
+            font-size: 7pt; color: #cbd5e1; 
+            border-top: 1px dashed #f97316; padding-top: 2mm; flex-shrink: 0; 
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        
+        .total-point {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10pt; font-weight: bold; color: var(--gw-yellow);
+            text-align: right;
+        }
+
+        /* モーダル */
+        .modal-overlay { background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+
+        /* 編集用プールアイテム */
+        .pool-item {
+            position: relative; background: rgba(30, 27, 75, 0.8); border: 1px solid rgba(249, 115, 22, 0.3);
+            border-radius: 8px; padding: 8px; transition: all 0.2s; display: flex; flex-direction: column;
+        }
+        .pool-item:hover { border-color: var(--gw-orange); background: rgba(30, 27, 75, 1); transform: translateY(-2px); }
+        .pool-item textarea {
+            width: 100%; height: 100%; background: transparent; color: #e2e8f0;
+            font-size: 0.8rem; text-align: center; resize: none; outline: none; flex-grow: 1; font-weight: bold; line-height: 1.4;
+        }
+        .pool-item-delete {
+            position: absolute; top: -6px; right: -6px; width: 20px; height: 20px;
+            background: #ef4444; color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 12px;
+            cursor: pointer; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .pool-item:hover .pool-item-delete { opacity: 1; }
+        .add-pool-item {
+            border: 2px dashed rgba(249, 115, 22, 0.3); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: rgba(249, 115, 22, 0.5); transition: all 0.2s; min-height: 80px;
+        }
+        .add-pool-item:hover { background: rgba(249, 115, 22, 0.1); border-color: var(--gw-orange); color: var(--gw-orange); }
+
+        /* 印刷設定 */
+        @media print {
+            @page { size: A4 portrait; margin: 0; }
+            body { background: white; color: black; padding: 0; }
+            .no-print { display: none !important; }
+            
+            #print-container {
+                width: 210mm; height: 297mm; display: grid;
+                grid-template-columns: 1fr 1fr; /* 1段2枚 */
+                grid-template-rows: repeat(2, auto);
+                gap: 5mm;
+                padding: 10mm; box-sizing: border-box;
+                justify-items: center;
+            }
+
+            .quest-card {
+                background: white !important; color: black !important;
+                border: 2px solid #333 !important; box-shadow: none !important;
+                margin: 0; width: 85mm; height: 135mm; -webkit-print-color-adjust: exact;
+            }
+            .quest-title { background: none; color: black !important; text-shadow: none; border-bottom: 2px solid #333; }
+            .quest-subtitle { color: #555 !important; }
+            .mission-cell { border: 1px solid #666 !important; border-left: 4px solid #333 !important; background: transparent !important; }
+            .point-badge { background: #333 !important; color: white !important; box-shadow: none !important; }
+            .stamp-check { border: 1px dashed #999 !important; color: #999 !important; background: transparent !important; }
+            .manager-sign { border-bottom: 1px solid black !important; }
+            .card-header, .card-footer { border-color: #666 !important; color: #333 !important;}
+            .total-point { color: black !important; }
+            .player-info { color: black !important; }
+            .quest-card::before { display: none; }
+        }
+
+        [contenteditable="true"]:focus { outline: none; background: rgba(249, 115, 22, 0.1); border-bottom: 1px solid rgba(249, 115, 22, 0.5); }
+    </style>
+</head>
+<body>
+
+    <!-- コントロールパネル -->
+    <div class="no-print bg-slate-900 border border-slate-700 p-4 rounded-xl shadow-2xl">
+        <div class="flex flex-wrap justify-between items-center gap-4">
+            <div>
+                <h2 class="text-orange-400 font-bold mb-1 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    GW SPECIAL QUEST GENERATOR
+                </h2>
+                <p class="text-xs text-slate-400">ランダムピックされた5つの項目でチケットを生成します。</p>
+            </div>
+            <div class="flex flex-wrap gap-2 items-center">
+                
+                <div class="flex gap-2 mr-4">
+                    <button onclick="openBackupModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 text-xs font-bold rounded transition-all border border-indigo-400 flex items-center gap-1 shadow-[0_0_10px_indigo]">
+                        データ引継ぎ
+                    </button>
+                </div>
+
+                <div class="h-6 w-px bg-slate-700 mx-1"></div>
+
+                <!-- アクションボタン -->
+                <button onclick="openPoolEditor()" class="bg-slate-700 hover:bg-slate-600 text-orange-300 px-3 py-1.5 text-xs font-bold rounded transition-all border border-orange-600/50 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    ミッション編集
+                </button>
+
+                <button onclick="regenerateCards()" class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 text-white px-5 py-1.5 text-xs font-bold rounded transition-all flex items-center gap-1 shadow-[0_0_15px_rgba(249,115,22,0.6)]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                    チケット再生成
+                </button>
+
+                <button onclick="window.print()" class="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-black px-6 py-1.5 rounded shadow-[0_0_15px_rgba(234,179,8,0.5)] text-xs ml-2">
+                    印刷する
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- データ引継ぎセンター・モーダル (流用) -->
+    <div id="backup-modal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 shadow-2xl w-11/12 max-w-4xl m-4 flex flex-col">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-700 pb-3">
+                <div>
+                    <h3 class="text-xl font-bold text-indigo-400 flex items-center gap-2">DATA TRANSFER CENTER</h3>
+                    <p class="text-xs text-slate-400 mt-1">他のPCへデータを引き継ぎます。</p>
+                </div>
+                <button onclick="closeBackupModal()" class="text-slate-400 hover:text-white">×</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 左：テキストで移行 -->
+                <div class="bg-slate-700/40 p-5 rounded-lg border border-indigo-500/50">
+                    <h4 class="text-indigo-400 font-bold mb-2 text-sm">テキスト（文字列）で引継ぎ</h4>
+                    <div class="mb-5 bg-slate-800 p-3 rounded border border-slate-600">
+                        <label class="text-[10px] text-slate-400 font-bold block mb-1">現在のデータをコピー</label>
+                        <div class="flex gap-2">
+                            <textarea id="export-text-area" readonly class="w-full h-12 bg-slate-900 border border-slate-600 rounded p-2 text-[10px] text-slate-400 outline-none resize-none font-mono" onclick="this.select()"></textarea>
+                            <button onclick="copyExportText()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 rounded text-xs text-white">コピー</button>
+                        </div>
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded border border-slate-600">
+                        <label class="text-[10px] text-slate-400 font-bold block mb-1">文字を貼り付けて復元</label>
+                        <div class="flex gap-2">
+                            <textarea id="import-text-area" placeholder="ここに貼り付け..." class="w-full h-12 bg-slate-900 border border-slate-600 rounded p-2 text-[10px] text-slate-300 outline-none resize-none font-mono"></textarea>
+                            <button onclick="importFromText()" class="px-3 py-1 bg-teal-600 hover:bg-teal-500 rounded text-xs text-white">復元</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- 右：ファイルで移行 -->
+                <div class="bg-slate-700/40 p-5 rounded-lg border border-slate-600">
+                    <h4 class="text-slate-300 font-bold mb-2 text-sm">ファイルで引継ぎ</h4>
+                    <div class="flex flex-col gap-6 mt-4">
+                        <button onclick="exportToFile()" class="w-full py-2.5 bg-slate-600 hover:bg-slate-500 text-white rounded text-sm font-bold">ファイルとして保存</button>
+                        <label class="w-full py-2.5 bg-slate-600 hover:bg-slate-500 text-white rounded text-sm font-bold flex items-center justify-center cursor-pointer border border-slate-500 border-dashed">
+                            ファイルを選択して復元
+                            <input type="file" id="import-file" class="hidden" accept=".json" onchange="importFromFile(this)">
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- プール編集モーダル -->
+    <div id="pool-editor-modal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="bg-slate-800 p-6 rounded-xl border border-orange-500/50 shadow-2xl w-11/12 max-w-7xl h-[90vh] m-4 flex flex-col">
+            <h3 class="text-xl font-bold text-orange-400 mb-2 font-orbitron">GW MISSION POOL EDITOR</h3>
+            <p class="text-xs text-slate-400 mb-4">編集内容は即座に自動保存されます。ここからランダムに5つ抽出されます。</p>
+            
+            <!-- グリッドコンテナ -->
+            <div id="pool-items-container" class="flex-grow overflow-y-auto p-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 mb-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                <!-- JSでマス目を生成 -->
+            </div>
+            
+            <div class="flex justify-between items-center flex-shrink-0 pt-2 border-t border-slate-700">
+                <button onclick="resetPoolToDefault()" class="px-4 py-2 text-red-400 hover:text-red-300 text-xs font-bold">初期状態に戻す</button>
+                <button onclick="closePoolEditor()" class="px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-bold rounded shadow-[0_0_10px_rgba(249,115,22,0.5)]">CLOSE & REFLECT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 印刷用コンテナ -->
+    <div id="print-container"></div>
+
+    <script>
+        // --- 企画書から読み取ったGWミッション初期データ ---
+        const defaultPools = {
+            gw: [
+                "APP (ORI) を\n販売する",
+                "APP (BOS) を\n販売する",
+                "FTW (ORI) を\n販売する",
+                "FTW (BOS) を\n販売する",
+                "女性のお客様に\n販売する",
+                "男性のお客様に\n販売する",
+                "BTM(ボトムス) を\n販売する",
+                "ご家族連れのお客様に\n販売する",
+                "APPフィッティングに\nご案内する",
+                "FTWフィッティングに\nご案内する",
+                "＋1点(追加)の\n販売クリア",
+                "今日の推しアイテムを\n販売する",
+                "自分の靴と同じ\nサイズを販売する",
+                "自分のAPPと同じ\nサイズを販売する",
+                "マネキン着用アイテムを\n販売する",
+                "代替案を提示して\nフィッティング誘導",
+                "複数のお客様を\n同時に接客する",
+                "SSQでSランク以上\nを獲得する",
+                "笑顔で袋渡し\n(○回クリア)",
+                "元気な挨拶\n(○回クリア)",
+                "メガネをかけている方に\nアプローチ",
+                "アディダス着用の方に\nアプローチ",
+                "お客様に「ありがとう」を\n見つけて伝える",
+                "セール告知を\n○回以上行う"
+            ]
+        };
+
+        const defaultConfigs = {
+            title: "GOLDEN WEEK QUEST",
+            subtitle: "5 MISSIONS TO CLEAR!",
+            player_placeholder: "NAME:",
+            date_placeholder: "DATE:   /  ",
+            footer_text: "※達成したら店長へ報告！"
+        };
+
+        let pools = JSON.parse(JSON.stringify(defaultPools)); 
+        let generatedCards = []; 
+
+        loadAllData();
+        
+        if (generatedCards.length === 0) {
+            regenerateCards();
+        } else {
+            renderAllCards();
+        }
+
+        // --- メイン機能 ---
+
+        function regenerateCards() {
+            if (generatedCards.length > 0 && !confirm("現在の内容は上書きされます。新しくチケットを生成しますか？")) return;
+
+            generatedCards = [];
+            const pool = pools.gw || defaultPools.gw;
+            
+            // 4枚のチケットを生成 (A4 1枚に4枚印刷想定)
+            for (let i = 0; i < 4; i++) {
+                let missions = getRandomSubset(pool, 5); // 5個抽出
+                let cardData = [];
+                for (let c = 0; c < 5; c++) {
+                    cardData.push({ text: missions[c] });
+                }
+                generatedCards.push(cardData);
+            }
+
+            saveCards();
+            renderAllCards();
+        }
+
+        function renderAllCards() {
+            const container = document.getElementById('print-container');
+            container.innerHTML = '';
+            const config = loadConfig();
+
+            generatedCards.forEach((cardData, cardIdx) => {
+                const card = document.createElement('div');
+                card.className = 'quest-card';
+
+                let missionListHTML = '';
+                cardData.forEach((cellData, cellIdx) => {
+                    missionListHTML += `
+                        <div class="mission-cell">
+                            <div class="mission-text outline-none" contenteditable="true" data-card="${cardIdx}" data-cell="${cellIdx}">
+                                ${cellData.text.replace(/\n/g, '<br>')}
+                            </div>
+                            <div class="flex items-center">
+                                <div class="point-badge">5pt</div>
+                                <div class="stamp-check">印</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="quest-title sync-text outline-none" contenteditable="true" data-sync-key="title">${config.title}</div>
+                        <div class="quest-subtitle sync-text outline-none" contenteditable="true" data-sync-key="subtitle">${config.subtitle}</div>
+                    </div>
+                    
+                    <div class="player-info">
+                        <div><span class="outline-none sync-text" contenteditable="true" data-sync-key="player_placeholder">${config.player_placeholder}</span> ________________</div>
+                        <div><span class="outline-none sync-text" contenteditable="true" data-sync-key="date_placeholder">${config.date_placeholder}</span></div>
+                    </div>
+
+                    <div class="mission-list">
+                        ${missionListHTML}
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="sync-text outline-none" contenteditable="true" data-sync-key="footer_text">${config.footer_text}</div>
+                        <div class="flex flex-col items-end">
+                            <div class="total-point">ALL CLEAR = 25pt</div>
+                            <div class="text-[6pt] mt-1 border-t border-slate-500 w-16 text-center pt-1 manager-sign">MANAGER</div>
+                        </div>
+                    </div>
+                `;
+
+                // イベントリスナー追加
+                card.querySelectorAll('.mission-text').forEach(el => {
+                    el.addEventListener('input', function() {
+                        updateCardData(this.dataset.card, this.dataset.cell, this.innerHTML);
+                    });
+                });
+
+                card.querySelectorAll('.sync-text').forEach(el => {
+                    el.addEventListener('input', function() {
+                        syncTextContent(this.dataset.syncKey, this.innerHTML);
+                    });
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        function updateCardData(cardIdx, cellIdx, text) {
+            generatedCards[cardIdx][cellIdx].text = text;
+            saveCards();
+        }
+
+        function saveCards() {
+            localStorage.setItem('gw_quest_cards', JSON.stringify(generatedCards));
+        }
+
+        function syncTextContent(key, htmlContent) {
+            const config = loadConfig();
+            config[key] = htmlContent;
+            localStorage.setItem('gw_quest_config', JSON.stringify(config)); 
+
+            document.querySelectorAll(`.sync-text[data-sync-key="${key}"]`).forEach(el => {
+                if (el !== document.activeElement) el.innerHTML = htmlContent;
+            });
+        }
+
+        // --- データ管理・引継ぎ機能 ---
+        function getExportDataObj() {
+            return {
+                pools: pools,
+                config: loadConfig(),
+                currentCards: localStorage.getItem('gw_quest_cards')
+            };
+        }
+
+        function unicodeToBase64(text) {
+            return btoa(encodeURIComponent(text).replace(/%([0-9A-F]{2})/g, function(m, p1) { return String.fromCharCode('0x' + p1); }));
+        }
+
+        function base64ToUnicode(str) {
+            return decodeURIComponent(atob(str).split('').map(function(c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join(''));
+        }
+
+        function openBackupModal() {
+            document.getElementById('backup-modal').classList.remove('hidden');
+            document.getElementById('backup-modal').classList.add('flex');
+            const dataObj = getExportDataObj();
+            document.getElementById('export-text-area').value = unicodeToBase64(JSON.stringify(dataObj));
+            document.getElementById('import-text-area').value = '';
+        }
+
+        function closeBackupModal() {
+            document.getElementById('backup-modal').classList.add('hidden');
+            document.getElementById('backup-modal').classList.remove('flex');
+        }
+
+        function copyExportText() {
+            const textarea = document.getElementById('export-text-area');
+            textarea.select();
+            document.execCommand('copy');
+            alert('コピーしました！LINE WORKS等で送信してください。');
+        }
+
+        function importFromText() {
+            const encodedString = document.getElementById('import-text-area').value.trim();
+            if(!encodedString) return alert('テキストがありません。');
+            try { applyImportData(JSON.parse(base64ToUnicode(encodedString))); } catch(e) { alert('無効なデータです。'); }
+        }
+
+        function exportToFile() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(getExportDataObj()));
+            const a = document.createElement('a'); a.href = dataStr; a.download = "gw_quest_backup.json";
+            document.body.appendChild(a); a.click(); a.remove();
+        }
+
+        function importFromFile(input) {
+            const file = input.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) { try { applyImportData(JSON.parse(e.target.result)); } catch (err) { alert("読み込み失敗"); } };
+            reader.readAsText(file); input.value = ''; 
+        }
+
+        function applyImportData(data) {
+            if (data.pools) { pools = data.pools; localStorage.setItem('gw_quest_pools', JSON.stringify(pools)); }
+            if (data.config) localStorage.setItem('gw_quest_config', JSON.stringify(data.config));
+            if (data.currentCards) localStorage.setItem('gw_quest_cards', data.currentCards);
+            alert("復元完了！"); location.reload();
+        }
+
+        // --- プール編集機能 ---
+        function openPoolEditor() {
+            document.getElementById('pool-editor-modal').classList.remove('hidden');
+            document.getElementById('pool-editor-modal').classList.add('flex');
+            
+            const container = document.getElementById('pool-items-container');
+            container.innerHTML = '';
+            const list = pools.gw || [];
+
+            list.forEach((text, index) => {
+                const item = document.createElement('div');
+                item.className = 'pool-item';
+                const textarea = document.createElement('textarea');
+                textarea.value = text.replace(/<br>/g, '\n');
+                textarea.addEventListener('input', function() { pools.gw[index] = this.value; savePools(); });
+                item.appendChild(textarea);
+                const delBtn = document.createElement('div');
+                delBtn.className = 'pool-item-delete'; delBtn.innerHTML = '×';
+                delBtn.onclick = () => { pools.gw.splice(index, 1); savePools(); openPoolEditor(); };
+                item.appendChild(delBtn);
+                container.appendChild(item);
+            });
+
+            const addBtn = document.createElement('div');
+            addBtn.className = 'add-pool-item';
+            addBtn.innerHTML = `<span class="text-xs font-bold">+ ADD NEW</span>`;
+            addBtn.onclick = () => { pools.gw.push("新しいミッション"); savePools(); openPoolEditor(); };
+            container.appendChild(addBtn);
+        }
+
+        function closePoolEditor() {
+            document.getElementById('pool-editor-modal').classList.add('hidden');
+            document.getElementById('pool-editor-modal').classList.remove('flex');
+        }
+
+        function savePools() { localStorage.setItem('gw_quest_pools', JSON.stringify(pools)); }
+
+        function resetPoolToDefault() {
+            if(!confirm("プールを初期化しますか？")) return;
+            pools.gw = [...defaultPools.gw];
+            savePools(); openPoolEditor();
+        }
+
+        // --- ユーティリティ ---
+        function loadAllData() {
+            const storedConfig = localStorage.getItem('gw_quest_config');
+            if (storedConfig) localStorage.setItem('gw_quest_config', JSON.stringify({ ...defaultConfigs, ...JSON.parse(storedConfig) }));
+            else localStorage.setItem('gw_quest_config', JSON.stringify(defaultConfigs));
+            
+            const storedPools = localStorage.getItem('gw_quest_pools');
+            if (storedPools) pools = JSON.parse(storedPools);
+
+            const storedCards = localStorage.getItem('gw_quest_cards');
+            if(storedCards) generatedCards = JSON.parse(storedCards);
+        }
+
+        function loadConfig() { return JSON.parse(localStorage.getItem('gw_quest_config')); }
+
+        function getRandomSubset(arr, count) {
+            if (!arr || arr.length === 0) return Array(count).fill("No Mission");
+            let shuffled = [...arr].sort(() => 0.5 - Math.random());
+            while (shuffled.length < count) shuffled = shuffled.concat([...arr].sort(() => 0.5 - Math.random()));
+            return shuffled.slice(0, count);
+        }
+    </script>
+</body>
+</html>
