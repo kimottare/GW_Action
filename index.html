@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GW Limited Special Ticket v2.8</title>
+    <title>GW Limited Special Ticket v3.2 (Cloud Sync)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Playfair+Display:wght@700;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -144,7 +144,7 @@
         }
 
         .mission-text {
-            font-size: 8.5pt; /* 初期サイズを少し大きめに設定 */
+            font-size: 8.5pt; 
             line-height: 1.15; 
             font-weight: 700;
             color: #f8f8f8;
@@ -153,7 +153,7 @@
             text-align: left;
             min-height: 0;
             overflow: hidden;
-            white-space: nowrap; /* 基本は1行に強制 */
+            white-space: nowrap; 
         }
 
         .stamp-check {
@@ -210,7 +210,7 @@
             font-weight: bold;
         }
 
-        /* 印刷設定 (元のデザインを維持) */
+        /* 印刷設定 */
         @media print {
             @page { size: A4 portrait; margin: 0; }
             html, body { 
@@ -243,9 +243,7 @@
         .pool-item textarea {
             width: 100%; height: 100%; background: transparent; color: #e2e8f0;
             font-size: 0.8rem; text-align: center; resize: none; outline: none; flex-grow: 1; font-weight: bold; line-height: 1.4;
-            /* textarea内の改行を防止するためのスタイル追加 */
-            white-space: nowrap;
-            overflow-x: auto;
+            white-space: nowrap; overflow-x: auto;
         }
         .pool-item { position: relative; background: rgba(30, 27, 75, 0.8); border: 1px solid rgba(249, 115, 22, 0.3); border-radius: 8px; padding: 8px; transition: all 0.2s; display: flex; flex-direction: column; }
         .pool-item-delete { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
@@ -259,12 +257,18 @@
             <div>
                 <h2 class="text-amber-400 font-bold mb-1 flex items-center gap-2 font-orbitron">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><path d="M6 3h12l4 5-10 13L2 8z"></path><path d="M11 13 8 9l-4 4 8 8 8-8-4-4-3 4z"></path></svg>
-                    PREMIUM TICKET v2.8
+                    PREMIUM TICKET v3.2
                 </h2>
-                <p class="text-xs text-slate-400">ボタン名をよりわかりやすい表記に修正しました。</p>
+                <p class="text-xs text-slate-400">プール空時のフリーズバグ修正・英語表記リスト・CHECK文言反映済</p>
             </div>
             <div class="flex flex-wrap gap-2 items-center">
-                <button onclick="openBackupModal()" class="bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 px-3 py-1.5 text-xs font-bold rounded border border-indigo-700 transition-all">引継ぎ</button>
+                
+                <!-- クラウド同期インジケーター -->
+                <div class="bg-indigo-900/50 text-indigo-300 px-3 py-1.5 text-xs font-bold rounded border border-indigo-700 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                    <span id="sync-status">クラウド同期ON</span>
+                </div>
+
                 <div class="h-6 w-px bg-slate-700 mx-1"></div>
                 <button onclick="openPoolEditor()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 px-3 py-1.5 text-xs font-bold rounded border border-amber-600/30 transition-all">ミッション編集</button>
                 <button onclick="regenerateCards()" class="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black px-5 py-1.5 text-xs font-black rounded transition-all shadow-lg">再発行</button>
@@ -281,6 +285,7 @@
     <div id="pool-editor-modal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
         <div class="bg-slate-900 p-6 rounded-xl border border-amber-500/30 shadow-2xl w-11/12 max-w-7xl h-[90vh] flex flex-col">
             <h3 class="text-xl font-bold text-amber-400 mb-2 font-orbitron">MISSION POOL EDITOR</h3>
+            <p class="text-xs text-slate-400 mb-2">編集内容はクラウドに自動保存され、全員に共有されます。</p>
             <div class="flex gap-2 mb-2 border-b border-slate-800 pb-2 overflow-x-auto">
                 <button onclick="switchPoolTab('fixed_sales')" id="tab-fixed_sales" class="px-4 py-2 text-xs font-bold rounded-t bg-amber-600 text-black">1行目：販売(固定)</button>
                 <button onclick="switchPoolTab('sales_focus')" id="tab-sales_focus" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-800">2・3行目：販売フォーカス</button>
@@ -289,42 +294,24 @@
             </div>
             <div id="pool-items-container" class="flex-grow overflow-y-auto p-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 mb-4"></div>
             <div class="flex justify-between items-center border-t border-slate-800 pt-3">
-                <button onclick="resetPoolToDefault()" class="px-4 py-2 text-red-400 text-xs font-bold">リセット</button>
+                <button onclick="resetPoolToDefault()" class="px-4 py-2 text-red-400 text-xs font-bold">初期リストに戻す</button>
                 <button onclick="closePoolEditor()" class="px-6 py-2 bg-amber-500 text-black text-sm font-bold rounded">保存して閉じる</button>
             </div>
         </div>
     </div>
 
-    <!-- データ引継ぎセンター -->
-    <div id="backup-modal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
-        <div class="bg-slate-900 p-6 rounded-xl border border-slate-700 shadow-2xl w-11/12 max-w-4xl flex flex-col">
-            <div class="flex justify-between items-center mb-5 border-b border-slate-800 pb-3 text-indigo-400 font-bold">DATA TRANSFER</div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-slate-800/50 p-4 rounded-lg">
-                    <h4 class="text-slate-300 font-bold mb-2 text-xs">テキストで引継ぎ</h4>
-                    <textarea id="export-text-area" readonly class="w-full h-12 bg-black border border-slate-700 rounded p-2 text-[9px] text-slate-400 font-mono mb-2" onclick="this.select()"></textarea>
-                    <button onclick="copyExportText()" class="w-full py-2 bg-indigo-700 text-white rounded text-xs mb-4">コピー</button>
-                    <textarea id="import-text-area" placeholder="貼り付け..." class="w-full h-12 bg-black border border-slate-700 rounded p-2 text-[9px] text-slate-300 font-mono mb-2"></textarea>
-                    <button onclick="importFromText()" class="w-full py-2 bg-teal-700 text-white rounded text-xs">復元</button>
-                </div>
-                <div class="bg-slate-800/50 p-4 rounded-lg flex flex-col justify-between">
-                    <h4 class="text-slate-300 font-bold mb-2 text-xs">ファイルで引継ぎ</h4>
-                    <button onclick="exportToFile()" class="w-full py-3 bg-slate-700 text-white rounded text-xs font-bold mb-4">ファイル保存</button>
-                    <label class="w-full py-3 bg-slate-700 text-white rounded text-xs font-bold flex items-center justify-center cursor-pointer border border-dashed border-slate-500">ファイル読込<input type="file" id="import-file" class="hidden" onchange="importFromFile(this)"></label>
-                </div>
-            </div>
-            <button onclick="closeBackupModal()" class="mt-4 text-slate-500 text-xs self-center">キャンセル</button>
-        </div>
-    </div>
-
     <div id="print-container"></div>
 
-    <script>
-        // デフォルトデータから改行(\n)を除去して1行化
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // デフォルトデータ (英語リストに戻し済み)
         const defaultPools = {
-            fixed_sales: ["APP(ORI)を販売する", "APP(BOS)を販売する", "FTW(ORI)を販売する", "FTW(BOS)を販売する", "今日の推しアイテム販売"],
-            sales_focus: ["女性のお客様に販売する", "男性のお客様に販売する", "BTM(ボトムス)を販売する", "ご家族連れに販売する", "APPフィッティングにご案内", "FTWフィッティングにご案内", "＋1点(追加)の販売クリア", "自分の靴と同じサイズ販売", "自分のAPPと同じサイズ販売", "マネキン着用アイテム販売", "代替案を提示しフィッティング", "複数のお客様を同時に接客する", "SSQでSランク以上を獲得"],
-            emm_next: ["笑顔で袋渡し(○回クリア)", "元気な挨拶(○回クリア)", "メガネをかけている方にアプローチ", "アディダス着用の方にアプローチ", "コネクト・エンゲージ2回実践"],
+            fixed_sales: ["APP (ORI) 販売", "APP (BOS) 販売", "FTW (ORI) 販売", "FTW (BOS) 販売", "今日の推しアイテム販売"],
+            sales_focus: ["女性のお客様に販売", "男性のお客様に販売", "BTM 商品販売", "ご家族連れに販売", "APP フィッティング", "FTW フィッティング", "＋1点(追加)の販売クリア", "自分の靴と同じサイズ販売", "自分のAPPと同じサイズ販売", "マネキン着用アイテム販売", "代替案を提示しフィッティング", "複数のお客様を同時に接客", "SSQでSランク以上を獲得"],
+            emm_next: ["笑顔で袋渡し(○回クリア)", "元気な挨拶(○回クリア)", "メガネをかけている方にアプローチ", "adidas着用の方にアプローチ", "コネクト・エンゲージ2回実践"],
             others: ["「ありがとう」を見つけて伝える", "セール告知を○回以上行う", "シフト少ない人に声かけ・サポート", "スタッフの良いところを褒める"]
         };
 
@@ -338,13 +325,105 @@
         let pools = {}; 
         let generatedCards = []; 
         let currentTab = 'fixed_sales';
+        let isEditing = false; // 自分が編集中はクラウドからの上書きを防ぐフラグ
 
-        loadAllData();
-        if (generatedCards.length === 0) regenerateCards();
-        else renderAllCards();
+        // --- Firebase 初期化とクラウド同期設定 ---
+        let auth, db, currentUser, docRef;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        try {
+            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            
+            const initAuth = async () => {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            };
+            initAuth();
+
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (user) {
+                    docRef = doc(db, 'artifacts', appId, 'public', 'data', 'gw_quest', 'shared_state');
+                    
+                    // リアルタイムリスナー
+                    onSnapshot(docRef, async (snap) => {
+                        if (!snap.exists()) {
+                            // クラウド初期化
+                            const localCards = localStorage.getItem('gw_v3_2_cards') || localStorage.getItem('gw_v2_10_cards');
+                            const localPools = localStorage.getItem('gw_v3_2_pools') || localStorage.getItem('gw_v2_10_pools');
+                            const localConfig = localStorage.getItem('gw_v3_2_config') || localStorage.getItem('gw_v2_10_config');
+                            
+                            let initialData = {
+                                pools: localPools ? JSON.parse(localPools) : JSON.parse(JSON.stringify(defaultPools)),
+                                config: localConfig ? JSON.parse(localConfig) : defaultConfigs,
+                                cards: localCards ? localCards : null
+                            };
+                            
+                            await setDoc(docRef, initialData); 
+                            
+                            pools = initialData.pools;
+                            localStorage.setItem('gw_v3_2_config', JSON.stringify(initialData.config));
+                            if (initialData.cards) {
+                                generatedCards = JSON.parse(initialData.cards);
+                                renderAllCards();
+                            } else {
+                                regenerateCards();
+                            }
+                        } else if (!isEditing) {
+                            // クラウドの最新データを反映
+                            const data = snap.data();
+                            if (data.pools) pools = data.pools;
+                            if (data.config) localStorage.setItem('gw_v3_2_config', JSON.stringify(data.config));
+                            if (data.cards) {
+                                generatedCards = JSON.parse(data.cards);
+                                renderAllCards();
+                            }
+                        }
+                    }, (err) => {
+                        console.error("Sync error:", err);
+                        document.getElementById('sync-status').innerText = "同期エラー(オフライン)";
+                        document.getElementById('sync-status').parentElement.classList.replace('text-indigo-300', 'text-red-400');
+                    });
+                }
+            });
+        } catch (e) {
+            console.error("Firebase setup failed", e);
+            document.getElementById('sync-status').innerText = "ローカル動作中";
+            loadAllDataLocal();
+            if (generatedCards.length === 0) regenerateCards();
+            else renderAllCards();
+        }
+
+        async function saveToCloud(dataObj) {
+            if (!currentUser || !docRef) return;
+            try {
+                await setDoc(docRef, dataObj, { merge: true });
+            } catch(e) {
+                console.error("Cloud save failed:", e);
+            }
+        }
+
+        // --- メイン機能群 ---
+        
+        // ★修正: リストが空の場合のフリーズバグ対策
+        function getRandomSubset(arr, count) {
+            if (!arr || arr.length === 0) return Array(count).fill("No Mission");
+            let s = [...arr].sort(() => 0.5 - Math.random());
+            while(s.length < count) {
+                s = s.concat([...arr].sort(() => 0.5 - Math.random()));
+            }
+            return s.slice(0, count);
+        }
 
         function regenerateCards() {
-            if (generatedCards.length > 0 && !confirm("内容を再生成しますか？")) return;
+            if (generatedCards.length > 0 && !confirm("内容を再発行しますか？")) return;
+            isEditing = true; 
             generatedCards = [];
             for (let i = 0; i < 8; i++) {
                 let cardData = [];
@@ -356,11 +435,14 @@
                 cardData.push({ text: getSafeString(getRandomSubset(pools.others, 1)[0]) });
                 generatedCards.push(cardData);
             }
-            saveCards();
+            localStorage.setItem('gw_v3_2_cards', JSON.stringify(generatedCards));
+            
+            saveToCloud({ cards: JSON.stringify(generatedCards) }).then(() => {
+                isEditing = false;
+            });
             renderAllCards();
         }
 
-        // データの安全な文字列化 + 改行の完全排除
         function getSafeString(data) {
             if (!data) return "";
             let text = "";
@@ -373,7 +455,7 @@
         function renderAllCards() {
             const container = document.getElementById('print-container');
             container.innerHTML = '';
-            const config = loadConfig();
+            const config = JSON.parse(localStorage.getItem('gw_v3_2_config') || JSON.stringify(defaultConfigs));
 
             generatedCards.forEach((cardData, cardIdx) => {
                 const card = document.createElement('div');
@@ -390,7 +472,7 @@
                             </div>
                             <div class="stamp-check">
                                 <div class="point-badge">5pt</div>
-                                CHECK
+                                CHECK  <!-- SEALから変更 -->
                             </div>
                         </div>
                     `;
@@ -427,76 +509,88 @@
                 card.querySelectorAll('.mission-text').forEach(el => {
                     setTimeout(() => autoFitText(el), 0);
                     
-                    // エンターキーによる改行を無効化
-                    el.addEventListener('keydown', function(e) {
-                        if(e.key === 'Enter') {
-                            e.preventDefault();
-                        }
-                    });
-
+                    el.addEventListener('keydown', function(e) { if(e.key === 'Enter') e.preventDefault(); });
+                    el.addEventListener('focus', () => { isEditing = true; }); 
+                    
                     el.addEventListener('input', function() {
-                        // 入力時にも強制的にプレーンテキスト(1行)にする
                         const plainText = this.innerText.replace(/\n/g, '');
-                        updateCardData(this.dataset.card, this.dataset.cell, plainText);
+                        generatedCards[this.dataset.card][this.dataset.cell].text = plainText;
+                        localStorage.setItem('gw_v3_2_cards', JSON.stringify(generatedCards));
                         autoFitText(this);
                     });
+
+                    el.addEventListener('blur', () => {
+                        saveToCloud({ cards: JSON.stringify(generatedCards) }).then(() => {
+                            isEditing = false;
+                        });
+                    });
                 });
+
                 card.querySelectorAll('.sync-text').forEach(el => {
-                    el.addEventListener('input', function() { syncTextContent(this.dataset.syncKey, this.innerHTML); });
+                    el.addEventListener('focus', () => { isEditing = true; });
+                    
+                    el.addEventListener('input', function() { 
+                        const key = this.dataset.syncKey;
+                        const htmlContent = this.innerHTML;
+                        const cfg = JSON.parse(localStorage.getItem('gw_v3_2_config') || '{}');
+                        cfg[key] = htmlContent;
+                        localStorage.setItem('gw_v3_2_config', JSON.stringify(cfg)); 
+                        
+                        document.querySelectorAll(`.sync-text[data-sync-key="${key}"]`).forEach(target => {
+                            if (target !== document.activeElement) target.innerHTML = htmlContent;
+                        });
+                    });
+
+                    el.addEventListener('blur', () => {
+                        const cfg = JSON.parse(localStorage.getItem('gw_v3_2_config'));
+                        saveToCloud({ config: cfg }).then(() => {
+                            isEditing = false;
+                        });
+                    });
                 });
+
+                card.querySelectorAll('.score-input-box').forEach(el => {
+                    el.addEventListener('focus', () => { isEditing = true; });
+                    el.addEventListener('blur', () => { isEditing = false; });
+                });
+
                 container.appendChild(card);
             });
         }
 
-        // --- スマート・オートフィット ---
         function autoFitText(el) {
-            let size = 8.5; // 初期サイズ
+            let size = 8.5; 
             el.style.fontSize = size + 'pt';
-            el.style.whiteSpace = 'nowrap'; // まずは1行に強制する
+            el.style.whiteSpace = 'nowrap'; 
             el.style.wordBreak = 'normal';
-            
-            // 1. 横幅が親より大きい場合は、フォントサイズを下げる（下限5.5pt）
             while (el.scrollWidth > el.clientWidth && size > 5.5) {
-                size -= 0.25; 
-                el.style.fontSize = size + 'pt';
+                size -= 0.25; el.style.fontSize = size + 'pt';
             }
-            
-            // 2. 最小サイズ(5.5pt)まで下げても横幅が収まらない場合のみ、2行での折り返しを許可する
             if (el.scrollWidth > el.clientWidth) {
-                el.style.whiteSpace = 'normal';
-                el.style.wordBreak = 'break-word';
-                
-                // 2行になった結果、高さが親（セル）をはみ出す場合は、さらに文字を小さくする
-                const maxHeight = el.parentElement.clientHeight - 4; // 上下余白考慮
+                el.style.whiteSpace = 'normal'; el.style.wordBreak = 'break-word';
+                const maxHeight = el.parentElement.clientHeight - 4; 
                 while (el.scrollHeight > maxHeight && size > 4.5) {
-                    size -= 0.25;
-                    el.style.fontSize = size + 'pt';
+                    size -= 0.25; el.style.fontSize = size + 'pt';
                 }
             }
         }
 
-        function updateCardData(cardIdx, cellIdx, text) {
-            generatedCards[cardIdx][cellIdx].text = text;
-            saveCards();
-        }
-
-        function saveCards() { localStorage.setItem('gw_v2_8_cards', JSON.stringify(generatedCards)); }
-
-        function syncTextContent(key, htmlContent) {
-            const config = loadConfig();
-            config[key] = htmlContent;
-            localStorage.setItem('gw_v2_8_config', JSON.stringify(config)); 
-            document.querySelectorAll(`.sync-text[data-sync-key="${key}"]`).forEach(el => {
-                if (el !== document.activeElement) el.innerHTML = htmlContent;
-            });
-        }
-
+        // --- エディターの制御 ---
         function openPoolEditor() {
+            isEditing = true; 
             document.getElementById('pool-editor-modal').classList.remove('hidden');
             document.getElementById('pool-editor-modal').classList.add('flex');
             switchPoolTab(currentTab);
         }
-        function closePoolEditor() { document.getElementById('pool-editor-modal').classList.add('hidden'); }
+
+        function closePoolEditor() { 
+            document.getElementById('pool-editor-modal').classList.add('hidden'); 
+            document.getElementById('pool-editor-modal').classList.remove('flex');
+            saveToCloud({ pools: pools }).then(() => {
+                isEditing = false;
+            });
+        }
+
         function switchPoolTab(tab) {
             currentTab = tab;
             ['fixed_sales', 'sales_focus', 'emm_next', 'others'].forEach(t => {
@@ -515,104 +609,53 @@
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
                 
-                // エンターキー無効化
-                textarea.addEventListener('keydown', function(e) {
-                    if(e.key === 'Enter') e.preventDefault();
-                });
+                textarea.addEventListener('keydown', function(e) { if(e.key === 'Enter') e.preventDefault(); });
                 
                 textarea.addEventListener('input', function() { 
-                    this.value = this.value.replace(/\n/g, ''); // リアルタイムで改行を消す
+                    this.value = this.value.replace(/\n/g, ''); 
                     pools[tab][index] = this.value; 
-                    savePools(); 
+                    localStorage.setItem('gw_v3_2_pools', JSON.stringify(pools));
                 });
                 div.appendChild(textarea);
                 const del = document.createElement('div');
                 del.className = 'pool-item-delete'; del.innerHTML = '×';
-                del.onclick = () => { pools[tab].splice(index, 1); savePools(); switchPoolTab(tab); };
+                del.onclick = () => { pools[tab].splice(index, 1); switchPoolTab(tab); };
                 div.appendChild(del);
                 container.appendChild(div);
             });
             const add = document.createElement('div');
             add.className = 'border-2 border-dashed border-slate-700 rounded-lg flex items-center justify-center p-4 cursor-pointer hover:border-amber-500 text-slate-500 hover:text-amber-500 min-h-[80px]';
             add.innerHTML = `<span class="text-xs font-bold">+ 追加</span>`;
-            add.onclick = () => { pools[tab].push("新ミッション"); savePools(); switchPoolTab(tab); };
+            add.onclick = () => { pools[tab].push("新ミッション"); switchPoolTab(tab); };
             container.appendChild(add);
         }
-        function savePools() { localStorage.setItem('gw_v2_8_pools', JSON.stringify(pools)); }
-        
+
         function resetPoolToDefault() {
             if(!confirm("全てリセットしますか？")) return;
             pools = JSON.parse(JSON.stringify(defaultPools));
-            savePools(); switchPoolTab(currentTab);
+            switchPoolTab(currentTab);
         }
 
-        function unicodeToBase64(text) { return btoa(encodeURIComponent(text).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode('0x' + p1))); }
-        function base64ToUnicode(str) { return decodeURIComponent(atob(str).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')); }
-        function openBackupModal() { document.getElementById('backup-modal').classList.remove('hidden'); document.getElementById('backup-modal').classList.add('flex'); document.getElementById('export-text-area').value = unicodeToBase64(JSON.stringify({ pools, config: loadConfig(), cards: localStorage.getItem('gw_v2_8_cards') })); }
-        function closeBackupModal() { document.getElementById('backup-modal').classList.add('hidden'); }
-        function copyExportText() { document.getElementById('export-text-area').select(); document.execCommand('copy'); alert('コピー成功'); }
-        function importFromText() {
-            const text = document.getElementById('import-text-area').value.trim();
-            if(!text) return;
-            try { applyImportData(JSON.parse(base64ToUnicode(text))); } catch(e) { alert('失敗'); }
-        }
-        function exportToFile() {
-            const blob = new Blob([JSON.stringify({ pools, config: loadConfig(), cards: localStorage.getItem('gw_v2_8_cards') })], {type: "application/json"});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "gw_premium_v2_8.json"; a.click();
-        }
-        function importFromFile(input) {
-            const reader = new FileReader();
-            reader.onload = e => applyImportData(JSON.parse(e.target.result));
-            reader.readAsText(input.files[0]);
-        }
-        function applyImportData(data) {
-            if (data.pools) { 
-                Object.keys(data.pools).forEach(key => {
-                    data.pools[key] = data.pools[key].map(item => getSafeString(item));
-                });
-                pools = data.pools; 
-                savePools(); 
-            }
-            if (data.config) localStorage.setItem('gw_v2_8_config', JSON.stringify(data.config));
-            if (data.cards) localStorage.setItem('gw_v2_8_cards', data.cards);
-            alert("復元完了"); location.reload();
-        }
-
-        function loadAllData() {
-            // v2.7からの引き継ぎも考慮
-            const config = localStorage.getItem('gw_v2_8_config') || localStorage.getItem('gw_v2_7_config');
-            if (config) localStorage.setItem('gw_v2_8_config', JSON.stringify({ ...defaultConfigs, ...JSON.parse(config) }));
-            else localStorage.setItem('gw_v2_8_config', JSON.stringify(defaultConfigs));
+        function loadAllDataLocal() {
+            const config = localStorage.getItem('gw_v3_2_config') || localStorage.getItem('gw_v2_10_config');
+            if (config) localStorage.setItem('gw_v3_2_config', JSON.stringify({ ...defaultConfigs, ...JSON.parse(config) }));
+            else localStorage.setItem('gw_v3_2_config', JSON.stringify(defaultConfigs));
             
-            const p = localStorage.getItem('gw_v2_8_pools') || localStorage.getItem('gw_v2_7_pools');
-            if (p) {
-                let parsed = JSON.parse(p);
-                Object.keys(parsed).forEach(key => {
-                    // ロード時に既存の改行も削除して1行化
-                    parsed[key] = parsed[key].map(item => getSafeString(item));
-                });
-                pools = parsed;
-            } else {
-                pools = JSON.parse(JSON.stringify(defaultPools));
-            }
+            const p = localStorage.getItem('gw_v3_2_pools') || localStorage.getItem('gw_v2_10_pools');
+            if (p) pools = JSON.parse(p);
+            else pools = JSON.parse(JSON.stringify(defaultPools));
 
-            const c = localStorage.getItem('gw_v2_8_cards') || localStorage.getItem('gw_v2_7_cards');
-            if(c) {
-                let parsedCards = JSON.parse(c);
-                parsedCards.forEach(card => {
-                    card.forEach(cell => {
-                        cell.text = getSafeString(cell.text); // カードのデータからも改行削除
-                    });
-                });
-                generatedCards = parsedCards;
-            }
+            const c = localStorage.getItem('gw_v3_2_cards') || localStorage.getItem('gw_v2_10_cards');
+            if(c) generatedCards = JSON.parse(c);
         }
-        function loadConfig() { return JSON.parse(localStorage.getItem('gw_v2_8_config')); }
-        function getRandomSubset(arr, count) {
-            let s = [...arr].sort(() => 0.5 - Math.random());
-            while(s.length < count) s = s.concat([...arr]);
-            return s.slice(0, count);
-        }
+
+        // HTMLの onclick 属性から呼べるように登録
+        window.openPoolEditor = openPoolEditor;
+        window.closePoolEditor = closePoolEditor;
+        window.switchPoolTab = switchPoolTab;
+        window.resetPoolToDefault = resetPoolToDefault;
+        window.regenerateCards = regenerateCards;
+
     </script>
 </body>
 </html>
