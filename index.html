@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GW Special Quest Generator v2</title>
+    <title>GW Special Quest Generator v2.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -24,12 +24,12 @@
 
         /* --- チケットの基本構造 (A4の1/8サイズ想定) --- */
         .quest-card {
-            width: 98mm;  /* A4横幅(210)の半分弱 */
-            height: 70mm; /* A4縦(297)の1/4弱 */
+            width: 95mm;  /* A4横幅(210)の半分弱 */
+            height: 68mm; /* A4縦(297)の1/4弱 */
             background: linear-gradient(135deg, #2e1065, #1e1b4b);
             border: 2px solid var(--gw-orange);
             border-radius: 8px;
-            padding: 3mm;
+            padding: 3mm 4mm;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -49,100 +49,97 @@
             border-radius: 6px;
         }
 
-        /* ヘッダー周り (コンパクトに) */
+        /* ヘッダー周り */
         .card-header { 
-            display: flex; justify-content: space-between; align-items: flex-end;
+            display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 2mm; flex-shrink: 0; 
             border-bottom: 1px solid rgba(249, 115, 22, 0.5); padding-bottom: 1mm; 
         }
         .quest-title-container { flex-grow: 1; }
-        .quest-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 10pt; background: linear-gradient(to right, #eab308, #f97316); -webkit-background-clip: text; color: transparent; letter-spacing: 0.5px; line-height: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
-        .quest-subtitle { font-size: 5pt; color: #fde047; font-weight: bold; margin-top: 1px; }
+        .quest-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 11pt; background: linear-gradient(to right, #eab308, #f97316); -webkit-background-clip: text; color: transparent; letter-spacing: 0.5px; line-height: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        .quest-subtitle { font-size: 5.5pt; color: #fde047; font-weight: bold; margin-top: 2px; }
 
         .player-info {
-            font-size: 6pt; color: #cbd5e1; font-weight: bold; text-align: right; line-height: 1;
+            font-size: 6.5pt; color: #cbd5e1; font-weight: bold; text-align: right; line-height: 1.2;
         }
 
-        /* 5マスの横並びコンテナ */
+        /* 5マスの縦並びコンテナ */
         .mission-list { 
-            display: grid; 
-            grid-template-columns: repeat(5, 1fr); 
-            grid-template-rows: 1fr;
-            gap: 1mm; 
+            display: flex;
+            flex-direction: column;
+            gap: 1.2mm; 
             flex-grow: 1; 
-            margin-bottom: 1.5mm; 
             min-height: 0;
         }
 
-        /* 1つのマス */
+        /* 1つの行（ミッション） */
         .mission-cell {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(249, 115, 22, 0.4);
             border-radius: 4px;
-            display: flex; flex-direction: column; align-items: center;
-            padding: 1mm;
+            display: flex; align-items: center;
+            padding: 1mm 2mm;
             position: relative; 
             overflow: hidden;
-            height: 100%;
+            flex-grow: 1;
         }
 
-        /* マス上部のカテゴリ名 */
-        .cell-category {
-            font-size: 4.5pt;
+        /* 行番号 */
+        .cell-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10pt;
+            font-weight: 900;
             color: var(--gw-yellow);
-            margin-bottom: 0.5mm;
-            white-space: nowrap;
-            text-align: center;
-            border-bottom: 1px solid rgba(234, 179, 8, 0.3);
-            width: 100%;
-            padding-bottom: 1px;
-            font-weight: bold;
+            width: 8mm;
             flex-shrink: 0;
+            text-align: center;
+            border-right: 1px solid rgba(234, 179, 8, 0.3);
+            margin-right: 2mm;
+            line-height: 1;
         }
 
         .mission-text {
-            font-size: 6pt; line-height: 1.1; font-weight: 700;
-            width: 100%;
+            font-size: 7pt; line-height: 1.2; font-weight: 700;
             flex-grow: 1;
             display: flex; flex-direction: column; justify-content: center;
-            text-align: center;
+            text-align: left;
             word-break: break-all;
             min-height: 0;
             overflow: hidden;
+            padding-right: 2mm;
         }
 
         /* スタンプ欄 */
         .stamp-check {
-            width: 8mm; height: 8mm;
-            border: 1px dashed rgba(234, 179, 8, 0.5); border-radius: 50%;
-            font-size: 4px; display: flex; align-items: center; justify-content: center;
+            width: 9mm; height: 9mm;
+            border: 1.5px dashed rgba(234, 179, 8, 0.5); border-radius: 50%;
+            font-size: 5px; display: flex; align-items: center; justify-content: center;
             color: rgba(234, 179, 8, 0.5);
             background: rgba(255,255,255,0.05);
-            margin-top: 0.5mm;
             flex-shrink: 0;
             position: relative;
         }
 
         .point-badge {
             background: var(--gw-red); color: white;
-            font-size: 4pt; font-family: 'Orbitron', sans-serif; font-weight: bold;
-            padding: 1px 2px; border-radius: 2px;
-            position: absolute; bottom: 0; right: -2px;
+            font-size: 5pt; font-family: 'Orbitron', sans-serif; font-weight: bold;
+            padding: 1px 3px; border-radius: 2px;
+            position: absolute; top: -2px; right: -4px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-            transform: scale(0.8);
+            z-index: 5;
         }
 
         /* フッター */
         .card-footer { 
-            font-size: 5pt; color: #cbd5e1; 
-            border-top: 1px dashed #f97316; padding-top: 1mm; flex-shrink: 0; 
-            display: flex; justify-content: space-between; align-items: flex-end;
+            margin-top: 1.5mm; flex-shrink: 0; 
+            display: flex; justify-content: flex-end; align-items: flex-end;
         }
         
         .total-point {
             font-family: 'Orbitron', sans-serif;
-            font-size: 7pt; font-weight: bold; color: var(--gw-yellow);
+            font-size: 8pt; font-weight: bold; color: var(--gw-yellow);
             text-align: right;
+            line-height: 1;
         }
 
         /* モーダル類 */
@@ -181,8 +178,8 @@
                 width: 210mm; height: 297mm; display: grid;
                 grid-template-columns: 1fr 1fr; /* 2列 */
                 grid-template-rows: repeat(4, 1fr); /* 4段 */
-                gap: 5mm;
-                padding: 8mm; box-sizing: border-box;
+                gap: 4mm;
+                padding: 10mm 8mm; box-sizing: border-box;
                 justify-items: center;
                 align-items: center;
             }
@@ -190,16 +187,15 @@
             .quest-card {
                 background: white !important; color: black !important;
                 border: 1px solid #333 !important; box-shadow: none !important;
-                margin: 0; width: 95mm; height: 68mm; -webkit-print-color-adjust: exact;
+                margin: 0; width: 95mm; height: 66mm; -webkit-print-color-adjust: exact;
             }
             .quest-title { background: none; color: black !important; text-shadow: none; }
-            .quest-subtitle { color: #555 !important; }
-            .cell-category { color: #333 !important; border-bottom-color: #999 !important; }
+            .quest-subtitle { color: #333 !important; }
+            .cell-number { color: #000 !important; border-right-color: #999 !important; }
             .mission-cell { border: 1px solid #999 !important; background: transparent !important; }
-            .point-badge { background: #333 !important; color: white !important; box-shadow: none !important; }
-            .stamp-check { border: 1px dashed #999 !important; color: #999 !important; background: transparent !important; }
-            .manager-sign { border-bottom: 1px solid black !important; }
-            .card-header, .card-footer { border-color: #666 !important; color: #333 !important;}
+            .point-badge { background: #000 !important; color: white !important; box-shadow: none !important; }
+            .stamp-check { border: 1.5px dashed #999 !important; color: #999 !important; background: transparent !important; }
+            .card-header, .card-footer { border-color: #999 !important; color: #333 !important;}
             .total-point { color: black !important; }
             .player-info { color: black !important; }
             .quest-card::before { display: none; }
@@ -216,9 +212,9 @@
             <div>
                 <h2 class="text-orange-400 font-bold mb-1 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                    GW QUEST GENERATOR v2
+                    GW QUEST GENERATOR v2.1
                 </h2>
-                <p class="text-xs text-slate-400">A4用紙 8分割サイズ・横5マスのチケットを8枚一括生成します。</p>
+                <p class="text-xs text-slate-400">A4用紙 8分割サイズ・縦5行のチケットを8枚一括生成します。</p>
             </div>
             <div class="flex flex-wrap gap-2 items-center">
                 
@@ -237,7 +233,7 @@
 
                 <button onclick="regenerateCards()" class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 text-white px-5 py-1.5 text-xs font-bold rounded transition-all flex items-center gap-1 shadow-[0_0_15px_rgba(249,115,22,0.6)]">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-                    チケット再生成
+                    再生成
                 </button>
 
                 <button onclick="window.print()" class="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-black px-6 py-1.5 rounded shadow-[0_0_15px_rgba(234,179,8,0.5)] text-xs ml-2">
@@ -251,14 +247,14 @@
     <div id="pool-editor-modal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
         <div class="bg-slate-800 p-6 rounded-xl border border-orange-500/50 shadow-2xl w-11/12 max-w-7xl h-[90vh] m-4 flex flex-col">
             <h3 class="text-xl font-bold text-orange-400 mb-2 font-orbitron">GW MISSION POOL EDITOR</h3>
-            <p class="text-xs text-slate-400 mb-4">チケットの左から順に抽出されます。編集内容は自動保存されます。</p>
+            <p class="text-xs text-slate-400 mb-4">行番号に応じて抽出されます。編集内容は自動保存されます。</p>
             
             <!-- タブ -->
             <div class="flex gap-2 mb-2 border-b border-slate-700 pb-2 flex-shrink-0 overflow-x-auto">
-                <button onclick="switchPoolTab('fixed_sales')" id="tab-fixed_sales" class="px-4 py-2 text-xs font-bold rounded-t bg-orange-600 text-white">マス1：販売(固定)</button>
-                <button onclick="switchPoolTab('sales_focus')" id="tab-sales_focus" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-700">マス2,3：販売フォーカス</button>
-                <button onclick="switchPoolTab('emm_next')" id="tab-emm_next" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-700">マス4：EMM NEXT</button>
-                <button onclick="switchPoolTab('others')" id="tab-others" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-700">マス5：その他</button>
+                <button onclick="switchPoolTab('fixed_sales')" id="tab-fixed_sales" class="px-4 py-2 text-xs font-bold rounded-t bg-orange-600 text-white">1行目：販売(固定)</button>
+                <button onclick="switchPoolTab('sales_focus')" id="tab-sales_focus" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-700">2・3行目：販売フォーカス</button>
+                <button onclick="switchPoolTab('emm_next')" id="tab-emm_next" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-700">4行目：EMM NEXT</button>
+                <button onclick="switchPoolTab('others')" id="tab-others" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-700">5行目：その他</button>
             </div>
 
             <div id="pool-items-container" class="flex-grow overflow-y-auto p-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 mb-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
@@ -267,7 +263,7 @@
             
             <div class="flex justify-between items-center flex-shrink-0 pt-2 border-t border-slate-700">
                 <button onclick="resetPoolToDefault()" class="px-4 py-2 text-red-400 hover:text-red-300 text-xs font-bold">初期状態に戻す</button>
-                <button onclick="closePoolEditor()" class="px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-bold rounded shadow-[0_0_10px_rgba(249,115,22,0.5)]">CLOSE & REFLECT</button>
+                <button onclick="closePoolEditor()" class="px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-bold rounded shadow-[0_0_10px_rgba(249,115,22,0.5)]">閉じる</button>
             </div>
         </div>
     </div>
@@ -282,11 +278,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- 左：テキスト -->
                 <div class="bg-slate-700/40 p-5 rounded-lg border border-indigo-500/50">
-                    <h4 class="text-indigo-400 font-bold mb-2 text-sm">テキスト（文字列）で引継ぎ</h4>
+                    <h4 class="text-indigo-400 font-bold mb-2 text-sm">テキストで引継ぎ</h4>
                     <textarea id="export-text-area" readonly class="w-full h-12 bg-slate-900 border border-slate-600 rounded p-2 text-[10px] text-slate-400 font-mono mb-2" onclick="this.select()"></textarea>
                     <button onclick="copyExportText()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded text-xs text-white mb-4">コピーする</button>
                     
-                    <textarea id="import-text-area" placeholder="ここに文字列を貼り付け..." class="w-full h-12 bg-slate-900 border border-slate-600 rounded p-2 text-[10px] text-slate-300 font-mono mb-2"></textarea>
+                    <textarea id="import-text-area" placeholder="ここに貼り付け..." class="w-full h-12 bg-slate-900 border border-slate-600 rounded p-2 text-[10px] text-slate-300 font-mono mb-2"></textarea>
                     <button onclick="importFromText()" class="w-full py-2 bg-teal-600 hover:bg-teal-500 rounded text-xs text-white">復元する</button>
                 </div>
                 <!-- 右：ファイル -->
@@ -305,10 +301,10 @@
     </div>
 
     <!-- 印刷用コンテナ -->
-    <div id="print-container" class="flex flex-wrap justify-center gap-4"></div>
+    <div id="print-container"></div>
 
     <script>
-        // --- 4つのカテゴリに分けた初期データ ---
+        // --- カテゴリ別ミッションデータ ---
         const defaultPools = {
             fixed_sales: [
                 "APP (ORI)\nを販売する", 
@@ -351,8 +347,7 @@
             title: "GOLDEN WEEK QUEST",
             subtitle: "5 MISSIONS TO CLEAR!",
             player_placeholder: "NAME:",
-            date_placeholder: "DATE:   /  ",
-            footer_text: "※達成したら店長へ報告！"
+            date_placeholder: "DATE:   /  "
         };
 
         let pools = {}; 
@@ -370,7 +365,7 @@
         // --- メイン機能 ---
 
         function regenerateCards() {
-            if (generatedCards.length > 0 && !confirm("現在の内容は上書きされます。新しくチケットを生成しますか？")) return;
+            if (generatedCards.length > 0 && !confirm("現在の内容は上書きされます。再生成しますか？")) return;
 
             generatedCards = [];
             const fixedPool = pools.fixed_sales || defaultPools.fixed_sales;
@@ -378,23 +373,18 @@
             const emmPool = pools.emm_next || defaultPools.emm_next;
             const othersPool = pools.others || defaultPools.others;
             
-            // A4用紙8枚分を生成
             for (let i = 0; i < 8; i++) {
                 let cardData = [];
-                
-                // 1マス目: 販売(固定) から1つ
-                cardData.push({ text: getRandomSubset(fixedPool, 1)[0], category: '販売(固定)' });
-                
-                // 2, 3マス目: 販売フォーカス から2つ
-                let salesFocusItems = getRandomSubset(salesPool, 2);
-                cardData.push({ text: salesFocusItems[0], category: '販売フォーカス' });
-                cardData.push({ text: salesFocusItems[1], category: '販売フォーカス' });
-                
-                // 4マス目: EMM NEXT から1つ
-                cardData.push({ text: getRandomSubset(emmPool, 1)[0], category: 'EMM NEXT' });
-                
-                // 5マス目: その他 から1つ
-                cardData.push({ text: getRandomSubset(othersPool, 1)[0], category: 'その他' });
+                // 1行目: 販売(固定)
+                cardData.push({ text: getRandomSubset(fixedPool, 1)[0] });
+                // 2, 3行目: 販売フォーカス
+                let focus = getRandomSubset(salesPool, 2);
+                cardData.push({ text: focus[0] });
+                cardData.push({ text: focus[1] });
+                // 4行目: EMM NEXT
+                cardData.push({ text: getRandomSubset(emmPool, 1)[0] });
+                // 5行目: その他
+                cardData.push({ text: getRandomSubset(othersPool, 1)[0] });
                 
                 generatedCards.push(cardData);
             }
@@ -412,13 +402,13 @@
                 const card = document.createElement('div');
                 card.className = 'quest-card';
 
-                let missionListHTML = '';
-                cardData.forEach((cellData, cellIdx) => {
-                    missionListHTML += `
+                let missionHTML = '';
+                cardData.forEach((cell, cellIdx) => {
+                    missionHTML += `
                         <div class="mission-cell">
-                            <div class="cell-category">${cellData.category}</div>
+                            <div class="cell-number">${cellIdx + 1}</div>
                             <div class="mission-text outline-none" contenteditable="true" data-card="${cardIdx}" data-cell="${cellIdx}">
-                                ${cellData.text.replace(/\n/g, '<br>')}
+                                ${cell.text.replace(/\n/g, '<br>')}
                             </div>
                             <div class="stamp-check">
                                 <div class="point-badge">5pt</div>
@@ -435,28 +425,22 @@
                             <div class="quest-subtitle sync-text outline-none" contenteditable="true" data-sync-key="subtitle">${config.subtitle}</div>
                         </div>
                         <div class="player-info">
-                            <div><span class="outline-none sync-text" contenteditable="true" data-sync-key="player_placeholder">${config.player_placeholder}</span> ________________</div>
-                            <div class="mt-1"><span class="outline-none sync-text" contenteditable="true" data-sync-key="date_placeholder">${config.date_placeholder}</span></div>
+                            <div><span class="sync-text" contenteditable="true" data-sync-key="player_placeholder">${config.player_placeholder}</span> ________</div>
+                            <div class="mt-1"><span class="sync-text" contenteditable="true" data-sync-key="date_placeholder">${config.date_placeholder}</span></div>
                         </div>
                     </div>
 
                     <div class="mission-list">
-                        ${missionListHTML}
+                        ${missionHTML}
                     </div>
 
                     <div class="card-footer">
-                        <div class="sync-text outline-none" contenteditable="true" data-sync-key="footer_text">${config.footer_text}</div>
-                        <div class="flex flex-col items-end">
-                            <div class="total-point">ALL CLEAR = 25pt</div>
-                        </div>
+                        <div class="total-point">ALL CLEAR = 25pt</div>
                     </div>
                 `;
 
-                // イベントリスナー追加
                 card.querySelectorAll('.mission-text').forEach(el => {
-                    // フォント自動調整
                     setTimeout(() => autoFitText(el), 0);
-                    
                     el.addEventListener('input', function() {
                         autoFitText(this);
                         updateCardData(this.dataset.card, this.dataset.cell, this.innerHTML);
@@ -473,17 +457,12 @@
             });
         }
 
-        // フォントサイズ自動調整 (縦長マス向け)
         function autoFitText(el) {
-            let size = 6.5; 
+            let size = 7.5; 
             el.style.fontSize = size + 'pt';
-            el.style.lineHeight = '1.1';
-            
-            const parent = el.parentElement;
-            const maxHeight = parent.clientHeight - 20; // 余白考慮
-
-            while (el.scrollHeight > maxHeight && size > 3.0) {
-                size -= 0.25;
+            const maxHeight = el.parentElement.clientHeight - 8;
+            while (el.scrollHeight > maxHeight && size > 4.0) {
+                size -= 0.5;
                 el.style.fontSize = size + 'pt';
             }
         }
@@ -493,21 +472,18 @@
             saveCards();
         }
 
-        function saveCards() {
-            localStorage.setItem('gw_quest_cards_v2', JSON.stringify(generatedCards));
-        }
+        function saveCards() { localStorage.setItem('gw_v2_1_cards', JSON.stringify(generatedCards)); }
 
         function syncTextContent(key, htmlContent) {
             const config = loadConfig();
             config[key] = htmlContent;
-            localStorage.setItem('gw_quest_config_v2', JSON.stringify(config)); 
-
+            localStorage.setItem('gw_v2_1_config', JSON.stringify(config)); 
             document.querySelectorAll(`.sync-text[data-sync-key="${key}"]`).forEach(el => {
                 if (el !== document.activeElement) el.innerHTML = htmlContent;
             });
         }
 
-        // --- プール編集機能 ---
+        // --- プール編集 ---
         function openPoolEditor() {
             document.getElementById('pool-editor-modal').classList.remove('hidden');
             document.getElementById('pool-editor-modal').classList.add('flex');
@@ -523,115 +499,88 @@
             currentTab = tab;
             ['fixed_sales', 'sales_focus', 'emm_next', 'others'].forEach(t => {
                 const btn = document.getElementById('tab-' + t);
-                if (t === tab) {
-                    btn.classList.remove('text-slate-400', 'hover:bg-slate-700');
-                    btn.classList.add('bg-orange-600', 'text-white');
-                } else {
-                    btn.classList.add('text-slate-400', 'hover:bg-slate-700');
-                    btn.classList.remove('bg-orange-600', 'text-white');
-                }
+                btn.className = (t === tab) ? "px-4 py-2 text-xs font-bold rounded-t bg-orange-600 text-white" : "px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-700";
             });
 
             const container = document.getElementById('pool-items-container');
             container.innerHTML = '';
-            const list = pools[tab] || [];
-
-            list.forEach((text, index) => {
+            pools[tab].forEach((text, index) => {
                 const item = document.createElement('div');
                 item.className = 'pool-item';
                 const textarea = document.createElement('textarea');
                 textarea.value = text.replace(/<br>/g, '\n');
                 textarea.addEventListener('input', function() { pools[tab][index] = this.value; savePools(); });
                 item.appendChild(textarea);
-                
-                const delBtn = document.createElement('div');
-                delBtn.className = 'pool-item-delete'; delBtn.innerHTML = '×';
-                delBtn.onclick = () => { pools[tab].splice(index, 1); savePools(); switchPoolTab(tab); };
-                item.appendChild(delBtn);
-                
+                const del = document.createElement('div');
+                del.className = 'pool-item-delete'; del.innerHTML = '×';
+                del.onclick = () => { pools[tab].splice(index, 1); savePools(); switchPoolTab(tab); };
+                item.appendChild(del);
                 container.appendChild(item);
             });
 
-            const addBtn = document.createElement('div');
-            addBtn.className = 'add-pool-item';
-            addBtn.innerHTML = `<span class="text-xs font-bold">+ ADD NEW</span>`;
-            addBtn.onclick = () => { pools[tab].push("新しいミッション"); savePools(); switchPoolTab(tab); };
-            container.appendChild(addBtn);
+            const add = document.createElement('div');
+            add.className = 'add-pool-item'; add.innerHTML = `<span class="text-xs font-bold">+ 追加</span>`;
+            add.onclick = () => { pools[tab].push("新ミッション"); savePools(); switchPoolTab(tab); };
+            container.appendChild(add);
         }
 
-        function savePools() { localStorage.setItem('gw_quest_pools_v2', JSON.stringify(pools)); }
+        function savePools() { localStorage.setItem('gw_v2_1_pools', JSON.stringify(pools)); }
 
         function resetPoolToDefault() {
-            if(!confirm("全てのプールを初期化しますか？")) return;
+            if(!confirm("全てリセットしますか？")) return;
             pools = JSON.parse(JSON.stringify(defaultPools));
             savePools(); switchPoolTab(currentTab);
         }
 
-        // --- データ管理・引継ぎ機能 ---
-        function getExportDataObj() {
-            return { pools: pools, config: loadConfig(), currentCards: localStorage.getItem('gw_quest_cards_v2') };
-        }
-        function unicodeToBase64(text) { return btoa(encodeURIComponent(text).replace(/%([0-9A-F]{2})/g, function(m, p1) { return String.fromCharCode('0x' + p1); })); }
-        function base64ToUnicode(str) { return decodeURIComponent(atob(str).split('').map(function(c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join('')); }
+        // --- データ引継ぎ ---
+        function getExportDataObj() { return { pools, config: loadConfig(), cards: localStorage.getItem('gw_v2_1_cards') }; }
+        function unicodeToBase64(text) { return btoa(encodeURIComponent(text).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode('0x' + p1))); }
+        function base64ToUnicode(str) { return decodeURIComponent(atob(str).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')); }
 
         function openBackupModal() {
             document.getElementById('backup-modal').classList.remove('hidden');
             document.getElementById('backup-modal').classList.add('flex');
             document.getElementById('export-text-area').value = unicodeToBase64(JSON.stringify(getExportDataObj()));
-            document.getElementById('import-text-area').value = '';
         }
-        function closeBackupModal() {
-            document.getElementById('backup-modal').classList.add('hidden');
-            document.getElementById('backup-modal').classList.remove('flex');
-        }
-        function copyExportText() {
-            const textarea = document.getElementById('export-text-area'); textarea.select(); document.execCommand('copy');
-            alert('コピーしました！LINE WORKS等で送信してください。');
-        }
+        function closeBackupModal() { document.getElementById('backup-modal').classList.add('hidden'); }
+        function copyExportText() { document.getElementById('export-text-area').select(); document.execCommand('copy'); alert('コピー成功'); }
         function importFromText() {
-            const encodedString = document.getElementById('import-text-area').value.trim();
-            if(!encodedString) return alert('テキストがありません。');
-            try { applyImportData(JSON.parse(base64ToUnicode(encodedString))); } catch(e) { alert('無効なデータです。'); }
+            const text = document.getElementById('import-text-area').value.trim();
+            if(!text) return;
+            try { applyImportData(JSON.parse(base64ToUnicode(text))); } catch(e) { alert('失敗'); }
         }
         function exportToFile() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(getExportDataObj()));
-            const a = document.createElement('a'); a.href = dataStr; a.download = "gw_quest_backup_v2.json";
-            document.body.appendChild(a); a.click(); a.remove();
+            const blob = new Blob([JSON.stringify(getExportDataObj())], {type: "application/json"});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "gw_quest_v2_1.json"; a.click();
         }
         function importFromFile(input) {
-            const file = input.files[0]; if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) { try { applyImportData(JSON.parse(e.target.result)); } catch (err) { alert("読み込み失敗"); } };
-            reader.readAsText(file); input.value = ''; 
+            reader.onload = e => applyImportData(JSON.parse(e.target.result));
+            reader.readAsText(input.files[0]);
         }
         function applyImportData(data) {
-            if (data.pools) { pools = data.pools; localStorage.setItem('gw_quest_pools_v2', JSON.stringify(pools)); }
-            if (data.config) localStorage.setItem('gw_quest_config_v2', JSON.stringify(data.config));
-            if (data.currentCards) localStorage.setItem('gw_quest_cards_v2', data.currentCards);
-            alert("復元完了！"); location.reload();
+            if (data.pools) { pools = data.pools; savePools(); }
+            if (data.config) localStorage.setItem('gw_v2_1_config', JSON.stringify(data.config));
+            if (data.cards) localStorage.setItem('gw_v2_1_cards', data.cards);
+            alert("復元完了"); location.reload();
         }
 
-        // --- ユーティリティ ---
         function loadAllData() {
-            const storedConfig = localStorage.getItem('gw_quest_config_v2');
-            if (storedConfig) localStorage.setItem('gw_quest_config_v2', JSON.stringify({ ...defaultConfigs, ...JSON.parse(storedConfig) }));
-            else localStorage.setItem('gw_quest_config_v2', JSON.stringify(defaultConfigs));
+            const config = localStorage.getItem('gw_v2_1_config');
+            if (config) localStorage.setItem('gw_v2_1_config', JSON.stringify({ ...defaultConfigs, ...JSON.parse(config) }));
+            else localStorage.setItem('gw_v2_1_config', JSON.stringify(defaultConfigs));
             
-            const storedPools = localStorage.getItem('gw_quest_pools_v2');
-            if (storedPools) pools = JSON.parse(storedPools);
-            else pools = JSON.parse(JSON.stringify(defaultPools));
+            const p = localStorage.getItem('gw_v2_1_pools');
+            pools = p ? JSON.parse(p) : JSON.parse(JSON.stringify(defaultPools));
 
-            const storedCards = localStorage.getItem('gw_quest_cards_v2');
-            if(storedCards) generatedCards = JSON.parse(storedCards);
+            const c = localStorage.getItem('gw_v2_1_cards');
+            if(c) generatedCards = JSON.parse(c);
         }
-
-        function loadConfig() { return JSON.parse(localStorage.getItem('gw_quest_config_v2')); }
-
+        function loadConfig() { return JSON.parse(localStorage.getItem('gw_v2_1_config')); }
         function getRandomSubset(arr, count) {
-            if (!arr || arr.length === 0) return Array(count).fill("No Mission");
-            let shuffled = [...arr].sort(() => 0.5 - Math.random());
-            while (shuffled.length < count) shuffled = shuffled.concat([...arr].sort(() => 0.5 - Math.random()));
-            return shuffled.slice(0, count);
+            let s = [...arr].sort(() => 0.5 - Math.random());
+            while(s.length < count) s = s.concat([...arr]);
+            return s.slice(0, count);
         }
     </script>
 </body>
