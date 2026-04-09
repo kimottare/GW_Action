@@ -3,37 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GW Special Quest Generator v2.1</title>
+    <title>GW Limited Special Ticket v2.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Playfair+Display:wght@700;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gw-orange: #f97316;
-            --gw-yellow: #eab308;
-            --gw-red: #ef4444;
-            --bg-dark: #1e1b4b;
+            --gold-light: #fdf289;
+            --gold-main: #d4af37;
+            --gold-dark: #aa8a2e;
+            --gold-gradient: linear-gradient(135deg, #fef9c3 0%, #d4af37 50%, #a17c16 100%);
+            --bg-premium: #0a0a0a;
         }
         body {
-            font-family: 'Rajdhani', 'Noto Sans JP', sans-serif;
-            background-color: var(--bg-dark);
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #1a1a1a;
             color: white;
             padding: 20px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         .no-print { max-width: 900px; margin: 0 auto 20px auto; }
 
-        /* --- チケットの基本構造 (A4の1/8サイズ想定) --- */
+        /* --- チケット構造 (A4 1/8サイズ) --- */
         .quest-card {
-            width: 95mm;  /* A4横幅(210)の半分弱 */
-            height: 68mm; /* A4縦(297)の1/4弱 */
-            background: linear-gradient(135deg, #2e1065, #1e1b4b);
-            border: 2px solid var(--gw-orange);
-            border-radius: 8px;
-            padding: 3mm 4mm;
+            width: 95mm;  
+            height: 68mm; 
+            background: var(--bg-premium);
+            border: 1px solid var(--gold-dark);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+            border-radius: 4px;
+            padding: 2.5mm 3.5mm;
             position: relative;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3);
             overflow: hidden;
             margin: 5px;
             box-sizing: border-box;
@@ -42,312 +45,294 @@
         .quest-card::before {
             content: "";
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            border: 1px dashed rgba(234, 179, 8, 0.4);
-            margin: 2px;
+            top: 1.2mm; left: 1.2mm; right: 1.2mm; bottom: 1.2mm;
+            border: 1px solid var(--gold-main);
+            opacity: 0.4;
             pointer-events: none;
-            border-radius: 6px;
+            z-index: 1;
         }
 
-        /* ヘッダー周り */
         .card-header { 
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 2mm; flex-shrink: 0; 
-            border-bottom: 1px solid rgba(249, 115, 22, 0.5); padding-bottom: 1mm; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-end;
+            margin-bottom: 1.5mm; 
+            flex-shrink: 0; 
+            border-bottom: 1.5px solid var(--gold-main); 
+            padding-bottom: 1mm; 
+            position: relative;
+            z-index: 2;
         }
-        .quest-title-container { flex-grow: 1; }
-        .quest-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 11pt; background: linear-gradient(to right, #eab308, #f97316); -webkit-background-clip: text; color: transparent; letter-spacing: 0.5px; line-height: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
-        .quest-subtitle { font-size: 5.5pt; color: #fde047; font-weight: bold; margin-top: 2px; }
+        
+        .title-area { flex: 1; min-width: 0; }
+        .quest-title { 
+            font-family: 'Playfair Display', serif;
+            font-weight: 900; 
+            font-size: 10.5pt; 
+            background: var(--gold-gradient);
+            -webkit-background-clip: text; 
+            color: transparent; 
+            letter-spacing: 0.5px;
+            line-height: 1;
+            text-transform: uppercase;
+        }
+        .quest-subtitle { 
+            font-size: 4.8pt; 
+            color: var(--gold-light);
+            font-weight: bold; 
+            letter-spacing: 1.5px;
+            margin-top: 1px;
+        }
 
         .player-info {
-            font-size: 6.5pt; color: #cbd5e1; font-weight: bold; text-align: right; line-height: 1.2;
+            width: 44mm; 
+            font-size: 6.5pt; 
+            color: #ccc;
+            flex-shrink: 0;
+            margin-left: 2mm;
+            line-height: 1.2;
         }
+        .info-row {
+            display: flex;
+            align-items: baseline;
+            gap: 1mm;
+            border-bottom: 0.5px solid rgba(212, 175, 55, 0.5);
+            margin-bottom: 0.5mm;
+        }
+        .info-label {
+            font-size: 5.5pt;
+            color: var(--gold-main);
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+        .info-value { flex-grow: 1; min-height: 1.2em; }
 
-        /* 5マスの縦並びコンテナ */
         .mission-list { 
             display: flex;
             flex-direction: column;
-            gap: 1.2mm; 
+            gap: 1mm; 
             flex-grow: 1; 
+            min-height: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .mission-cell {
+            background: rgba(255, 255, 255, 0.04);
+            border: 0.5px solid rgba(212, 175, 55, 0.25);
+            border-radius: 2px;
+            display: flex; align-items: center;
+            padding: 0.8mm 1.5mm;
+            position: relative; 
+            flex-grow: 1;
             min-height: 0;
         }
 
-        /* 1つの行（ミッション） */
-        .mission-cell {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(249, 115, 22, 0.4);
-            border-radius: 4px;
-            display: flex; align-items: center;
-            padding: 1mm 2mm;
-            position: relative; 
-            overflow: hidden;
-            flex-grow: 1;
-        }
-
-        /* 行番号 */
         .cell-number {
             font-family: 'Orbitron', sans-serif;
-            font-size: 10pt;
+            font-size: 8pt;
             font-weight: 900;
-            color: var(--gw-yellow);
-            width: 8mm;
+            color: #000;
+            width: 6.5mm;
+            height: 6.5mm;
             flex-shrink: 0;
             text-align: center;
-            border-right: 1px solid rgba(234, 179, 8, 0.3);
-            margin-right: 2mm;
-            line-height: 1;
+            line-height: 6.5mm;
+            background: var(--gold-gradient);
+            border-radius: 50%;
+            margin-right: 2.5mm;
         }
 
         .mission-text {
-            font-size: 7pt; line-height: 1.2; font-weight: 700;
+            font-size: 8.5pt; /* 初期サイズを少し大きめに設定 */
+            line-height: 1.15; 
+            font-weight: 700;
+            color: #f8f8f8;
             flex-grow: 1;
             display: flex; flex-direction: column; justify-content: center;
             text-align: left;
-            word-break: break-all;
             min-height: 0;
             overflow: hidden;
-            padding-right: 2mm;
+            white-space: nowrap; /* 基本は1行に強制 */
         }
 
-        /* スタンプ欄 */
         .stamp-check {
             width: 9mm; height: 9mm;
-            border: 1.5px dashed rgba(234, 179, 8, 0.5); border-radius: 50%;
-            font-size: 5px; display: flex; align-items: center; justify-content: center;
-            color: rgba(234, 179, 8, 0.5);
-            background: rgba(255,255,255,0.05);
+            border: 1px dashed var(--gold-main);
+            border-radius: 50%;
+            font-size: 4.5pt; 
+            display: flex; align-items: center; justify-content: center;
+            color: var(--gold-dark);
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
             flex-shrink: 0;
             position: relative;
         }
 
         .point-badge {
-            background: var(--gw-red); color: white;
-            font-size: 5pt; font-family: 'Orbitron', sans-serif; font-weight: bold;
-            padding: 1px 3px; border-radius: 2px;
-            position: absolute; top: -2px; right: -4px;
+            background: #b91c1c;
+            color: white;
+            font-size: 4.5pt; font-family: 'Orbitron', sans-serif; font-weight: bold;
+            padding: 1px 2px; border-radius: 1px;
+            position: absolute; top: -2px; right: -2px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.5);
             z-index: 5;
         }
 
-        /* フッター */
         .card-footer { 
-            margin-top: 1.5mm; flex-shrink: 0; 
-            display: flex; justify-content: flex-end; align-items: flex-end;
+            margin-top: 1.2mm; flex-shrink: 0; 
+            display: flex; justify-content: space-between; align-items: flex-end;
+            position: relative; z-index: 2;
         }
         
-        .total-point {
+        .footer-deco { flex-grow: 1; height: 0.5px; background: var(--gold-gradient); opacity: 0.3; margin-bottom: 2mm; margin-right: 4mm; }
+        .score-area {
+            display: flex;
+            align-items: flex-end;
+            gap: 2mm;
+            flex-shrink: 0;
+        }
+        .total-point-label {
             font-family: 'Orbitron', sans-serif;
-            font-size: 8pt; font-weight: bold; color: var(--gw-yellow);
-            text-align: right;
-            line-height: 1;
+            font-size: 7.5pt; font-weight: 900; 
+            color: var(--gold-main);
+        }
+        .score-input-box {
+            border: 1px solid var(--gold-main);
+            width: 12mm;
+            height: 6.5mm;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10pt;
+            color: white;
+            font-weight: bold;
         }
 
-        /* モーダル類 */
-        .modal-overlay { background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
-
-        .pool-item {
-            position: relative; background: rgba(30, 27, 75, 0.8); border: 1px solid rgba(249, 115, 22, 0.3);
-            border-radius: 8px; padding: 8px; transition: all 0.2s; display: flex; flex-direction: column;
-        }
-        .pool-item:hover { border-color: var(--gw-orange); background: rgba(30, 27, 75, 1); transform: translateY(-2px); }
-        .pool-item textarea {
-            width: 100%; height: 100%; background: transparent; color: #e2e8f0;
-            font-size: 0.8rem; text-align: center; resize: none; outline: none; flex-grow: 1; font-weight: bold; line-height: 1.4;
-        }
-        .pool-item-delete {
-            position: absolute; top: -6px; right: -6px; width: 20px; height: 20px;
-            background: #ef4444; color: white; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 12px;
-            cursor: pointer; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        .pool-item:hover .pool-item-delete { opacity: 1; }
-        .add-pool-item {
-            border: 2px dashed rgba(249, 115, 22, 0.3); border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: rgba(249, 115, 22, 0.5); transition: all 0.2s; min-height: 80px;
-        }
-        .add-pool-item:hover { background: rgba(249, 115, 22, 0.1); border-color: var(--gw-orange); color: var(--gw-orange); }
-
-        /* 印刷設定 (A4用紙に8枚: 縦4段×横2列) */
+        /* 印刷設定 (元のデザインを維持) */
         @media print {
             @page { size: A4 portrait; margin: 0; }
-            body { background: white; color: black; padding: 0; }
+            html, body { 
+                margin: 0; padding: 0; width: 210mm; height: 297mm; background: white; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+            }
             .no-print { display: none !important; }
             
             #print-container {
-                width: 210mm; height: 297mm; display: grid;
-                grid-template-columns: 1fr 1fr; /* 2列 */
-                grid-template-rows: repeat(4, 1fr); /* 4段 */
-                gap: 4mm;
-                padding: 10mm 8mm; box-sizing: border-box;
-                justify-items: center;
-                align-items: center;
+                display: grid;
+                width: 210mm; height: 297mm;
+                grid-template-columns: 105mm 105mm;
+                grid-template-rows: repeat(4, 74.25mm);
+                box-sizing: border-box;
+                padding: 0;
             }
 
             .quest-card {
-                background: white !important; color: black !important;
-                border: 1px solid #333 !important; box-shadow: none !important;
-                margin: 0; width: 95mm; height: 66mm; -webkit-print-color-adjust: exact;
+                margin: auto !important; 
+                width: 95mm !important; 
+                height: 68mm !important;
+                box-shadow: none !important;
             }
-            .quest-title { background: none; color: black !important; text-shadow: none; }
-            .quest-subtitle { color: #333 !important; }
-            .cell-number { color: #000 !important; border-right-color: #999 !important; }
-            .mission-cell { border: 1px solid #999 !important; background: transparent !important; }
-            .point-badge { background: #000 !important; color: white !important; box-shadow: none !important; }
-            .stamp-check { border: 1.5px dashed #999 !important; color: #999 !important; background: transparent !important; }
-            .card-header, .card-footer { border-color: #999 !important; color: #333 !important;}
-            .total-point { color: black !important; }
-            .player-info { color: black !important; }
-            .quest-card::before { display: none; }
         }
 
-        [contenteditable="true"]:focus { outline: none; background: rgba(249, 115, 22, 0.1); border-bottom: 1px solid rgba(249, 115, 22, 0.5); }
+        [contenteditable="true"]:focus { outline: none; background: rgba(212, 175, 55, 0.15); border-radius: 2px; }
+
+        /* プール編集 */
+        .pool-item textarea {
+            width: 100%; height: 100%; background: transparent; color: #e2e8f0;
+            font-size: 0.8rem; text-align: center; resize: none; outline: none; flex-grow: 1; font-weight: bold; line-height: 1.4;
+            /* textarea内の改行を防止するためのスタイル追加 */
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .pool-item { position: relative; background: rgba(30, 27, 75, 0.8); border: 1px solid rgba(249, 115, 22, 0.3); border-radius: 8px; padding: 8px; transition: all 0.2s; display: flex; flex-direction: column; }
+        .pool-item-delete { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .modal-overlay { background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
 
-    <!-- コントロールパネル -->
     <div class="no-print bg-slate-900 border border-slate-700 p-4 rounded-xl shadow-2xl">
         <div class="flex flex-wrap justify-between items-center gap-4">
             <div>
-                <h2 class="text-orange-400 font-bold mb-1 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                    GW QUEST GENERATOR v2.1
+                <h2 class="text-amber-400 font-bold mb-1 flex items-center gap-2 font-orbitron">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><path d="M6 3h12l4 5-10 13L2 8z"></path><path d="M11 13 8 9l-4 4 8 8 8-8-4-4-3 4z"></path></svg>
+                    PREMIUM TICKET v2.8
                 </h2>
-                <p class="text-xs text-slate-400">A4用紙 8分割サイズ・縦5行のチケットを8枚一括生成します。</p>
+                <p class="text-xs text-slate-400">ボタン名をよりわかりやすい表記に修正しました。</p>
             </div>
             <div class="flex flex-wrap gap-2 items-center">
-                
-                <div class="flex gap-2 mr-4">
-                    <button onclick="openBackupModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 text-xs font-bold rounded transition-all border border-indigo-400 flex items-center gap-1 shadow-[0_0_10px_indigo]">
-                        データ引継ぎ
-                    </button>
-                </div>
-
+                <button onclick="openBackupModal()" class="bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 px-3 py-1.5 text-xs font-bold rounded border border-indigo-700 transition-all">引継ぎ</button>
                 <div class="h-6 w-px bg-slate-700 mx-1"></div>
-
-                <button onclick="openPoolEditor()" class="bg-slate-700 hover:bg-slate-600 text-orange-300 px-3 py-1.5 text-xs font-bold rounded transition-all border border-orange-600/50 flex items-center gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    ミッション編集
-                </button>
-
-                <button onclick="regenerateCards()" class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 text-white px-5 py-1.5 text-xs font-bold rounded transition-all flex items-center gap-1 shadow-[0_0_15px_rgba(249,115,22,0.6)]">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-                    再生成
-                </button>
-
-                <button onclick="window.print()" class="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-black px-6 py-1.5 rounded shadow-[0_0_15px_rgba(234,179,8,0.5)] text-xs ml-2">
-                    印刷する
-                </button>
+                <button onclick="openPoolEditor()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 px-3 py-1.5 text-xs font-bold rounded border border-amber-600/30 transition-all">ミッション編集</button>
+                <button onclick="regenerateCards()" class="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black px-5 py-1.5 text-xs font-black rounded transition-all shadow-lg">再発行</button>
+                <button onclick="window.print()" class="bg-white text-black font-black px-6 py-1.5 rounded text-xs ml-2 hover:bg-slate-200 transition-all">印刷プレビュー</button>
             </div>
+        </div>
+        <div class="mt-3 bg-amber-900/30 border border-amber-500/30 p-2 rounded flex items-center gap-2 text-xs text-amber-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <strong>印刷時の注意：</strong> 印刷画面の詳細設定で、「背景のグラフィック (Background graphics)」に必ずチェックを入れてください。
         </div>
     </div>
 
     <!-- プール編集モーダル -->
     <div id="pool-editor-modal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
-        <div class="bg-slate-800 p-6 rounded-xl border border-orange-500/50 shadow-2xl w-11/12 max-w-7xl h-[90vh] m-4 flex flex-col">
-            <h3 class="text-xl font-bold text-orange-400 mb-2 font-orbitron">GW MISSION POOL EDITOR</h3>
-            <p class="text-xs text-slate-400 mb-4">行番号に応じて抽出されます。編集内容は自動保存されます。</p>
-            
-            <!-- タブ -->
-            <div class="flex gap-2 mb-2 border-b border-slate-700 pb-2 flex-shrink-0 overflow-x-auto">
-                <button onclick="switchPoolTab('fixed_sales')" id="tab-fixed_sales" class="px-4 py-2 text-xs font-bold rounded-t bg-orange-600 text-white">1行目：販売(固定)</button>
-                <button onclick="switchPoolTab('sales_focus')" id="tab-sales_focus" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-700">2・3行目：販売フォーカス</button>
-                <button onclick="switchPoolTab('emm_next')" id="tab-emm_next" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-700">4行目：EMM NEXT</button>
-                <button onclick="switchPoolTab('others')" id="tab-others" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-700">5行目：その他</button>
+        <div class="bg-slate-900 p-6 rounded-xl border border-amber-500/30 shadow-2xl w-11/12 max-w-7xl h-[90vh] flex flex-col">
+            <h3 class="text-xl font-bold text-amber-400 mb-2 font-orbitron">MISSION POOL EDITOR</h3>
+            <div class="flex gap-2 mb-2 border-b border-slate-800 pb-2 overflow-x-auto">
+                <button onclick="switchPoolTab('fixed_sales')" id="tab-fixed_sales" class="px-4 py-2 text-xs font-bold rounded-t bg-amber-600 text-black">1行目：販売(固定)</button>
+                <button onclick="switchPoolTab('sales_focus')" id="tab-sales_focus" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-800">2・3行目：販売フォーカス</button>
+                <button onclick="switchPoolTab('emm_next')" id="tab-emm_next" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-800">4行目：EMM NEXT</button>
+                <button onclick="switchPoolTab('others')" id="tab-others" class="px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-800">5行目：その他</button>
             </div>
-
-            <div id="pool-items-container" class="flex-grow overflow-y-auto p-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 mb-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                <!-- JSでマス目を生成 -->
-            </div>
-            
-            <div class="flex justify-between items-center flex-shrink-0 pt-2 border-t border-slate-700">
-                <button onclick="resetPoolToDefault()" class="px-4 py-2 text-red-400 hover:text-red-300 text-xs font-bold">初期状態に戻す</button>
-                <button onclick="closePoolEditor()" class="px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-bold rounded shadow-[0_0_10px_rgba(249,115,22,0.5)]">閉じる</button>
+            <div id="pool-items-container" class="flex-grow overflow-y-auto p-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 mb-4"></div>
+            <div class="flex justify-between items-center border-t border-slate-800 pt-3">
+                <button onclick="resetPoolToDefault()" class="px-4 py-2 text-red-400 text-xs font-bold">リセット</button>
+                <button onclick="closePoolEditor()" class="px-6 py-2 bg-amber-500 text-black text-sm font-bold rounded">保存して閉じる</button>
             </div>
         </div>
     </div>
 
-    <!-- データ引継ぎセンター・モーダル -->
+    <!-- データ引継ぎセンター -->
     <div id="backup-modal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
-        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 shadow-2xl w-11/12 max-w-4xl m-4 flex flex-col">
-            <div class="flex justify-between items-center mb-5 border-b border-slate-700 pb-3">
-                <h3 class="text-xl font-bold text-indigo-400">DATA TRANSFER CENTER</h3>
-                <button onclick="closeBackupModal()" class="text-slate-400 hover:text-white">×</button>
-            </div>
+        <div class="bg-slate-900 p-6 rounded-xl border border-slate-700 shadow-2xl w-11/12 max-w-4xl flex flex-col">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-800 pb-3 text-indigo-400 font-bold">DATA TRANSFER</div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- 左：テキスト -->
-                <div class="bg-slate-700/40 p-5 rounded-lg border border-indigo-500/50">
-                    <h4 class="text-indigo-400 font-bold mb-2 text-sm">テキストで引継ぎ</h4>
-                    <textarea id="export-text-area" readonly class="w-full h-12 bg-slate-900 border border-slate-600 rounded p-2 text-[10px] text-slate-400 font-mono mb-2" onclick="this.select()"></textarea>
-                    <button onclick="copyExportText()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded text-xs text-white mb-4">コピーする</button>
-                    
-                    <textarea id="import-text-area" placeholder="ここに貼り付け..." class="w-full h-12 bg-slate-900 border border-slate-600 rounded p-2 text-[10px] text-slate-300 font-mono mb-2"></textarea>
-                    <button onclick="importFromText()" class="w-full py-2 bg-teal-600 hover:bg-teal-500 rounded text-xs text-white">復元する</button>
+                <div class="bg-slate-800/50 p-4 rounded-lg">
+                    <h4 class="text-slate-300 font-bold mb-2 text-xs">テキストで引継ぎ</h4>
+                    <textarea id="export-text-area" readonly class="w-full h-12 bg-black border border-slate-700 rounded p-2 text-[9px] text-slate-400 font-mono mb-2" onclick="this.select()"></textarea>
+                    <button onclick="copyExportText()" class="w-full py-2 bg-indigo-700 text-white rounded text-xs mb-4">コピー</button>
+                    <textarea id="import-text-area" placeholder="貼り付け..." class="w-full h-12 bg-black border border-slate-700 rounded p-2 text-[9px] text-slate-300 font-mono mb-2"></textarea>
+                    <button onclick="importFromText()" class="w-full py-2 bg-teal-700 text-white rounded text-xs">復元</button>
                 </div>
-                <!-- 右：ファイル -->
-                <div class="bg-slate-700/40 p-5 rounded-lg border border-slate-600">
-                    <h4 class="text-slate-300 font-bold mb-2 text-sm">ファイルで引継ぎ</h4>
-                    <div class="flex flex-col gap-6 mt-4">
-                        <button onclick="exportToFile()" class="w-full py-2 bg-slate-600 hover:bg-slate-500 text-white rounded text-sm font-bold">ファイルとして保存</button>
-                        <label class="w-full py-2 bg-slate-600 hover:bg-slate-500 text-white rounded text-sm font-bold flex items-center justify-center cursor-pointer border border-slate-500 border-dashed">
-                            ファイルを選択して復元
-                            <input type="file" id="import-file" class="hidden" accept=".json" onchange="importFromFile(this)">
-                        </label>
-                    </div>
+                <div class="bg-slate-800/50 p-4 rounded-lg flex flex-col justify-between">
+                    <h4 class="text-slate-300 font-bold mb-2 text-xs">ファイルで引継ぎ</h4>
+                    <button onclick="exportToFile()" class="w-full py-3 bg-slate-700 text-white rounded text-xs font-bold mb-4">ファイル保存</button>
+                    <label class="w-full py-3 bg-slate-700 text-white rounded text-xs font-bold flex items-center justify-center cursor-pointer border border-dashed border-slate-500">ファイル読込<input type="file" id="import-file" class="hidden" onchange="importFromFile(this)"></label>
                 </div>
             </div>
+            <button onclick="closeBackupModal()" class="mt-4 text-slate-500 text-xs self-center">キャンセル</button>
         </div>
     </div>
 
-    <!-- 印刷用コンテナ -->
     <div id="print-container"></div>
 
     <script>
-        // --- カテゴリ別ミッションデータ ---
+        // デフォルトデータから改行(\n)を除去して1行化
         const defaultPools = {
-            fixed_sales: [
-                "APP (ORI)\nを販売する", 
-                "APP (BOS)\nを販売する", 
-                "FTW (ORI)\nを販売する", 
-                "FTW (BOS)\nを販売する", 
-                "今日の推し\nアイテム販売"
-            ],
-            sales_focus: [
-                "女性のお客様\nに販売する", 
-                "男性のお客様\nに販売する", 
-                "BTM(ボトムス)\nを販売する", 
-                "ご家族連れ\nに販売する", 
-                "APPフィッティング\nにご案内する", 
-                "FTWフィッティング\nにご案内する", 
-                "＋1点(追加)の\n販売クリア", 
-                "自分の靴と\n同じサイズ販売", 
-                "自分のAPPと\n同じサイズ販売", 
-                "マネキン着用\nアイテム販売", 
-                "代替案を提示して\nフィッティング", 
-                "複数のお客様を\n同時に接客する", 
-                "SSQでSランク\n以上を獲得する"
-            ],
-            emm_next: [
-                "笑顔で袋渡し\n(○回クリア)", 
-                "元気な挨拶\n(○回クリア)", 
-                "メガネをかけて\nいる方にアプローチ", 
-                "アディダス着用\nの方にアプローチ",
-                "コネクト・エンゲージ\n2回実践"
-            ],
-            others: [
-                "「ありがとう」を\n見つけて伝える", 
-                "セール告知を\n○回以上行う",
-                "シフト少ない人に\n声かけ・サポート",
-                "スタッフの良い\nところを褒める"
-            ]
+            fixed_sales: ["APP(ORI)を販売する", "APP(BOS)を販売する", "FTW(ORI)を販売する", "FTW(BOS)を販売する", "今日の推しアイテム販売"],
+            sales_focus: ["女性のお客様に販売する", "男性のお客様に販売する", "BTM(ボトムス)を販売する", "ご家族連れに販売する", "APPフィッティングにご案内", "FTWフィッティングにご案内", "＋1点(追加)の販売クリア", "自分の靴と同じサイズ販売", "自分のAPPと同じサイズ販売", "マネキン着用アイテム販売", "代替案を提示しフィッティング", "複数のお客様を同時に接客する", "SSQでSランク以上を獲得"],
+            emm_next: ["笑顔で袋渡し(○回クリア)", "元気な挨拶(○回クリア)", "メガネをかけている方にアプローチ", "アディダス着用の方にアプローチ", "コネクト・エンゲージ2回実践"],
+            others: ["「ありがとう」を見つけて伝える", "セール告知を○回以上行う", "シフト少ない人に声かけ・サポート", "スタッフの良いところを褒める"]
         };
 
         const defaultConfigs = {
-            title: "GOLDEN WEEK QUEST",
-            subtitle: "5 MISSIONS TO CLEAR!",
-            player_placeholder: "NAME:",
-            date_placeholder: "DATE:   /  "
+            title: "GOLDEN WEEK LIMITED",
+            subtitle: "PREMIUM SELECTION 2024",
+            player_placeholder: "NAME",
+            date_placeholder: "DATE"
         };
 
         let pools = {}; 
@@ -355,42 +340,34 @@
         let currentTab = 'fixed_sales';
 
         loadAllData();
-        
-        if (generatedCards.length === 0) {
-            regenerateCards();
-        } else {
+        if (generatedCards.length === 0) regenerateCards();
+        else renderAllCards();
+
+        function regenerateCards() {
+            if (generatedCards.length > 0 && !confirm("内容を再生成しますか？")) return;
+            generatedCards = [];
+            for (let i = 0; i < 8; i++) {
+                let cardData = [];
+                cardData.push({ text: getSafeString(getRandomSubset(pools.fixed_sales, 1)[0]) });
+                let focus = getRandomSubset(pools.sales_focus, 2);
+                cardData.push({ text: getSafeString(focus[0]) });
+                cardData.push({ text: getSafeString(focus[1]) });
+                cardData.push({ text: getSafeString(getRandomSubset(pools.emm_next, 1)[0]) });
+                cardData.push({ text: getSafeString(getRandomSubset(pools.others, 1)[0]) });
+                generatedCards.push(cardData);
+            }
+            saveCards();
             renderAllCards();
         }
 
-        // --- メイン機能 ---
-
-        function regenerateCards() {
-            if (generatedCards.length > 0 && !confirm("現在の内容は上書きされます。再生成しますか？")) return;
-
-            generatedCards = [];
-            const fixedPool = pools.fixed_sales || defaultPools.fixed_sales;
-            const salesPool = pools.sales_focus || defaultPools.sales_focus;
-            const emmPool = pools.emm_next || defaultPools.emm_next;
-            const othersPool = pools.others || defaultPools.others;
-            
-            for (let i = 0; i < 8; i++) {
-                let cardData = [];
-                // 1行目: 販売(固定)
-                cardData.push({ text: getRandomSubset(fixedPool, 1)[0] });
-                // 2, 3行目: 販売フォーカス
-                let focus = getRandomSubset(salesPool, 2);
-                cardData.push({ text: focus[0] });
-                cardData.push({ text: focus[1] });
-                // 4行目: EMM NEXT
-                cardData.push({ text: getRandomSubset(emmPool, 1)[0] });
-                // 5行目: その他
-                cardData.push({ text: getRandomSubset(othersPool, 1)[0] });
-                
-                generatedCards.push(cardData);
-            }
-
-            saveCards();
-            renderAllCards();
+        // データの安全な文字列化 + 改行の完全排除
+        function getSafeString(data) {
+            if (!data) return "";
+            let text = "";
+            if (typeof data === 'string') text = data;
+            else if (typeof data === 'object' && data.text) text = data.text;
+            else text = String(data);
+            return text.replace(/\n/g, '').replace(/<br>/g, '');
         }
 
         function renderAllCards() {
@@ -404,15 +381,16 @@
 
                 let missionHTML = '';
                 cardData.forEach((cell, cellIdx) => {
+                    const cellText = getSafeString(cell.text);
                     missionHTML += `
                         <div class="mission-cell">
                             <div class="cell-number">${cellIdx + 1}</div>
                             <div class="mission-text outline-none" contenteditable="true" data-card="${cardIdx}" data-cell="${cellIdx}">
-                                ${cell.text.replace(/\n/g, '<br>')}
+                                ${cellText}
                             </div>
                             <div class="stamp-check">
                                 <div class="point-badge">5pt</div>
-                                印
+                                CHECK
                             </div>
                         </div>
                     `;
@@ -420,50 +398,80 @@
 
                 card.innerHTML = `
                     <div class="card-header">
-                        <div class="quest-title-container">
+                        <div class="title-area">
                             <div class="quest-title sync-text outline-none" contenteditable="true" data-sync-key="title">${config.title}</div>
                             <div class="quest-subtitle sync-text outline-none" contenteditable="true" data-sync-key="subtitle">${config.subtitle}</div>
                         </div>
                         <div class="player-info">
-                            <div><span class="sync-text" contenteditable="true" data-sync-key="player_placeholder">${config.player_placeholder}</span> ________</div>
-                            <div class="mt-1"><span class="sync-text" contenteditable="true" data-sync-key="date_placeholder">${config.date_placeholder}</span></div>
+                            <div class="info-row">
+                                <div class="info-label sync-text" contenteditable="true" data-sync-key="player_placeholder">${config.player_placeholder}</div>
+                                <div class="info-value"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label sync-text" contenteditable="true" data-sync-key="date_placeholder">${config.date_placeholder}</div>
+                                <div class="info-value"></div>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="mission-list">
-                        ${missionHTML}
-                    </div>
-
+                    <div class="mission-list">${missionHTML}</div>
                     <div class="card-footer">
-                        <div class="total-point">ALL CLEAR = 25pt</div>
+                        <div class="footer-deco"></div>
+                        <div class="score-area">
+                            <div class="total-point-label">TOTAL:</div>
+                            <div class="score-input-box" contenteditable="true"></div>
+                            <div class="total-point-label">/ 25 pt</div>
+                        </div>
                     </div>
                 `;
 
                 card.querySelectorAll('.mission-text').forEach(el => {
                     setTimeout(() => autoFitText(el), 0);
+                    
+                    // エンターキーによる改行を無効化
+                    el.addEventListener('keydown', function(e) {
+                        if(e.key === 'Enter') {
+                            e.preventDefault();
+                        }
+                    });
+
                     el.addEventListener('input', function() {
+                        // 入力時にも強制的にプレーンテキスト(1行)にする
+                        const plainText = this.innerText.replace(/\n/g, '');
+                        updateCardData(this.dataset.card, this.dataset.cell, plainText);
                         autoFitText(this);
-                        updateCardData(this.dataset.card, this.dataset.cell, this.innerHTML);
                     });
                 });
-
                 card.querySelectorAll('.sync-text').forEach(el => {
-                    el.addEventListener('input', function() {
-                        syncTextContent(this.dataset.syncKey, this.innerHTML);
-                    });
+                    el.addEventListener('input', function() { syncTextContent(this.dataset.syncKey, this.innerHTML); });
                 });
-
                 container.appendChild(card);
             });
         }
 
+        // --- スマート・オートフィット ---
         function autoFitText(el) {
-            let size = 7.5; 
+            let size = 8.5; // 初期サイズ
             el.style.fontSize = size + 'pt';
-            const maxHeight = el.parentElement.clientHeight - 8;
-            while (el.scrollHeight > maxHeight && size > 4.0) {
-                size -= 0.5;
+            el.style.whiteSpace = 'nowrap'; // まずは1行に強制する
+            el.style.wordBreak = 'normal';
+            
+            // 1. 横幅が親より大きい場合は、フォントサイズを下げる（下限5.5pt）
+            while (el.scrollWidth > el.clientWidth && size > 5.5) {
+                size -= 0.25; 
                 el.style.fontSize = size + 'pt';
+            }
+            
+            // 2. 最小サイズ(5.5pt)まで下げても横幅が収まらない場合のみ、2行での折り返しを許可する
+            if (el.scrollWidth > el.clientWidth) {
+                el.style.whiteSpace = 'normal';
+                el.style.wordBreak = 'break-word';
+                
+                // 2行になった結果、高さが親（セル）をはみ出す場合は、さらに文字を小さくする
+                const maxHeight = el.parentElement.clientHeight - 4; // 上下余白考慮
+                while (el.scrollHeight > maxHeight && size > 4.5) {
+                    size -= 0.25;
+                    el.style.fontSize = size + 'pt';
+                }
             }
         }
 
@@ -472,76 +480,75 @@
             saveCards();
         }
 
-        function saveCards() { localStorage.setItem('gw_v2_1_cards', JSON.stringify(generatedCards)); }
+        function saveCards() { localStorage.setItem('gw_v2_8_cards', JSON.stringify(generatedCards)); }
 
         function syncTextContent(key, htmlContent) {
             const config = loadConfig();
             config[key] = htmlContent;
-            localStorage.setItem('gw_v2_1_config', JSON.stringify(config)); 
+            localStorage.setItem('gw_v2_8_config', JSON.stringify(config)); 
             document.querySelectorAll(`.sync-text[data-sync-key="${key}"]`).forEach(el => {
                 if (el !== document.activeElement) el.innerHTML = htmlContent;
             });
         }
 
-        // --- プール編集 ---
         function openPoolEditor() {
             document.getElementById('pool-editor-modal').classList.remove('hidden');
             document.getElementById('pool-editor-modal').classList.add('flex');
             switchPoolTab(currentTab);
         }
-
-        function closePoolEditor() {
-            document.getElementById('pool-editor-modal').classList.add('hidden');
-            document.getElementById('pool-editor-modal').classList.remove('flex');
-        }
-
+        function closePoolEditor() { document.getElementById('pool-editor-modal').classList.add('hidden'); }
         function switchPoolTab(tab) {
             currentTab = tab;
             ['fixed_sales', 'sales_focus', 'emm_next', 'others'].forEach(t => {
                 const btn = document.getElementById('tab-' + t);
-                btn.className = (t === tab) ? "px-4 py-2 text-xs font-bold rounded-t bg-orange-600 text-white" : "px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-700";
+                btn.className = (t === tab) ? "px-4 py-2 text-xs font-bold rounded-t bg-amber-600 text-black" : "px-4 py-2 text-xs font-bold rounded-t text-slate-400 hover:bg-slate-800";
             });
-
             const container = document.getElementById('pool-items-container');
             container.innerHTML = '';
-            pools[tab].forEach((text, index) => {
-                const item = document.createElement('div');
-                item.className = 'pool-item';
+            
+            if (!pools[tab]) pools[tab] = [];
+            
+            pools[tab].forEach((item, index) => {
+                const text = getSafeString(item); 
+                const div = document.createElement('div');
+                div.className = 'pool-item';
                 const textarea = document.createElement('textarea');
-                textarea.value = text.replace(/<br>/g, '\n');
-                textarea.addEventListener('input', function() { pools[tab][index] = this.value; savePools(); });
-                item.appendChild(textarea);
+                textarea.value = text;
+                
+                // エンターキー無効化
+                textarea.addEventListener('keydown', function(e) {
+                    if(e.key === 'Enter') e.preventDefault();
+                });
+                
+                textarea.addEventListener('input', function() { 
+                    this.value = this.value.replace(/\n/g, ''); // リアルタイムで改行を消す
+                    pools[tab][index] = this.value; 
+                    savePools(); 
+                });
+                div.appendChild(textarea);
                 const del = document.createElement('div');
                 del.className = 'pool-item-delete'; del.innerHTML = '×';
                 del.onclick = () => { pools[tab].splice(index, 1); savePools(); switchPoolTab(tab); };
-                item.appendChild(del);
-                container.appendChild(item);
+                div.appendChild(del);
+                container.appendChild(div);
             });
-
             const add = document.createElement('div');
-            add.className = 'add-pool-item'; add.innerHTML = `<span class="text-xs font-bold">+ 追加</span>`;
+            add.className = 'border-2 border-dashed border-slate-700 rounded-lg flex items-center justify-center p-4 cursor-pointer hover:border-amber-500 text-slate-500 hover:text-amber-500 min-h-[80px]';
+            add.innerHTML = `<span class="text-xs font-bold">+ 追加</span>`;
             add.onclick = () => { pools[tab].push("新ミッション"); savePools(); switchPoolTab(tab); };
             container.appendChild(add);
         }
-
-        function savePools() { localStorage.setItem('gw_v2_1_pools', JSON.stringify(pools)); }
-
+        function savePools() { localStorage.setItem('gw_v2_8_pools', JSON.stringify(pools)); }
+        
         function resetPoolToDefault() {
             if(!confirm("全てリセットしますか？")) return;
             pools = JSON.parse(JSON.stringify(defaultPools));
             savePools(); switchPoolTab(currentTab);
         }
 
-        // --- データ引継ぎ ---
-        function getExportDataObj() { return { pools, config: loadConfig(), cards: localStorage.getItem('gw_v2_1_cards') }; }
         function unicodeToBase64(text) { return btoa(encodeURIComponent(text).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode('0x' + p1))); }
         function base64ToUnicode(str) { return decodeURIComponent(atob(str).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')); }
-
-        function openBackupModal() {
-            document.getElementById('backup-modal').classList.remove('hidden');
-            document.getElementById('backup-modal').classList.add('flex');
-            document.getElementById('export-text-area').value = unicodeToBase64(JSON.stringify(getExportDataObj()));
-        }
+        function openBackupModal() { document.getElementById('backup-modal').classList.remove('hidden'); document.getElementById('backup-modal').classList.add('flex'); document.getElementById('export-text-area').value = unicodeToBase64(JSON.stringify({ pools, config: loadConfig(), cards: localStorage.getItem('gw_v2_8_cards') })); }
         function closeBackupModal() { document.getElementById('backup-modal').classList.add('hidden'); }
         function copyExportText() { document.getElementById('export-text-area').select(); document.execCommand('copy'); alert('コピー成功'); }
         function importFromText() {
@@ -550,8 +557,8 @@
             try { applyImportData(JSON.parse(base64ToUnicode(text))); } catch(e) { alert('失敗'); }
         }
         function exportToFile() {
-            const blob = new Blob([JSON.stringify(getExportDataObj())], {type: "application/json"});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "gw_quest_v2_1.json"; a.click();
+            const blob = new Blob([JSON.stringify({ pools, config: loadConfig(), cards: localStorage.getItem('gw_v2_8_cards') })], {type: "application/json"});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "gw_premium_v2_8.json"; a.click();
         }
         function importFromFile(input) {
             const reader = new FileReader();
@@ -559,24 +566,48 @@
             reader.readAsText(input.files[0]);
         }
         function applyImportData(data) {
-            if (data.pools) { pools = data.pools; savePools(); }
-            if (data.config) localStorage.setItem('gw_v2_1_config', JSON.stringify(data.config));
-            if (data.cards) localStorage.setItem('gw_v2_1_cards', data.cards);
+            if (data.pools) { 
+                Object.keys(data.pools).forEach(key => {
+                    data.pools[key] = data.pools[key].map(item => getSafeString(item));
+                });
+                pools = data.pools; 
+                savePools(); 
+            }
+            if (data.config) localStorage.setItem('gw_v2_8_config', JSON.stringify(data.config));
+            if (data.cards) localStorage.setItem('gw_v2_8_cards', data.cards);
             alert("復元完了"); location.reload();
         }
 
         function loadAllData() {
-            const config = localStorage.getItem('gw_v2_1_config');
-            if (config) localStorage.setItem('gw_v2_1_config', JSON.stringify({ ...defaultConfigs, ...JSON.parse(config) }));
-            else localStorage.setItem('gw_v2_1_config', JSON.stringify(defaultConfigs));
+            // v2.7からの引き継ぎも考慮
+            const config = localStorage.getItem('gw_v2_8_config') || localStorage.getItem('gw_v2_7_config');
+            if (config) localStorage.setItem('gw_v2_8_config', JSON.stringify({ ...defaultConfigs, ...JSON.parse(config) }));
+            else localStorage.setItem('gw_v2_8_config', JSON.stringify(defaultConfigs));
             
-            const p = localStorage.getItem('gw_v2_1_pools');
-            pools = p ? JSON.parse(p) : JSON.parse(JSON.stringify(defaultPools));
+            const p = localStorage.getItem('gw_v2_8_pools') || localStorage.getItem('gw_v2_7_pools');
+            if (p) {
+                let parsed = JSON.parse(p);
+                Object.keys(parsed).forEach(key => {
+                    // ロード時に既存の改行も削除して1行化
+                    parsed[key] = parsed[key].map(item => getSafeString(item));
+                });
+                pools = parsed;
+            } else {
+                pools = JSON.parse(JSON.stringify(defaultPools));
+            }
 
-            const c = localStorage.getItem('gw_v2_1_cards');
-            if(c) generatedCards = JSON.parse(c);
+            const c = localStorage.getItem('gw_v2_8_cards') || localStorage.getItem('gw_v2_7_cards');
+            if(c) {
+                let parsedCards = JSON.parse(c);
+                parsedCards.forEach(card => {
+                    card.forEach(cell => {
+                        cell.text = getSafeString(cell.text); // カードのデータからも改行削除
+                    });
+                });
+                generatedCards = parsedCards;
+            }
         }
-        function loadConfig() { return JSON.parse(localStorage.getItem('gw_v2_1_config')); }
+        function loadConfig() { return JSON.parse(localStorage.getItem('gw_v2_8_config')); }
         function getRandomSubset(arr, count) {
             let s = [...arr].sort(() => 0.5 - Math.random());
             while(s.length < count) s = s.concat([...arr]);
