@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GW QUEST GENERATOR v3.6</title>
+    <title>GW SELLING QUEST GENERATOR v4.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <style>
@@ -69,7 +69,7 @@
             background-color: #2a1b12;
             padding: 0.5mm 3mm;
             border-radius: 1px;
-            max-width: 70%;
+            max-width: 55%; /* 右側の記入欄スペース確保のため縮小 */
         }
         .mh-title {
             color: #eaddb6;
@@ -80,14 +80,34 @@
             overflow: hidden;
         }
 
-        .mh-difficulty {
-            color: #8b0000;
-            font-size: 8pt;
-            letter-spacing: 1px;
+        .mh-header-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: flex-end;
+            gap: 1px;
+            margin-bottom: 0.5mm;
         }
-        .mh-star-empty {
+        .mh-header-info-row {
+            display: flex;
+            align-items: flex-end;
+            font-size: 5.5pt;
             color: #2a1b12;
-            opacity: 0.4;
+        }
+        .mh-header-label {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 700;
+            color: #8b0000;
+            margin-right: 1mm;
+        }
+        .mh-header-val {
+            font-weight: 800;
+            border-bottom: 0.5px solid #2a1b12;
+            min-width: 32mm; /* 手書きしやすくするため、18mmから32mmに拡大 */
+            text-align: center;
+            line-height: 1;
+            padding-bottom: 0.5mm;
+            display: inline-block;
         }
 
         /* メインボディ */
@@ -102,7 +122,7 @@
 
         /* 左側（ターゲット） */
         .mh-left {
-            flex: 1.2;
+            flex: 2;
             display: flex;
             flex-direction: column;
             min-width: 0;
@@ -113,6 +133,7 @@
             flex: 0.8;
             display: flex;
             flex-direction: column;
+            justify-content: flex-end;
             border-left: 1px dashed #8b6b4a;
             padding-left: 2.5mm;
             gap: 1.5mm;
@@ -173,39 +194,20 @@
             overflow: hidden;
         }
 
-        /* スタンプ (CLEAR!) */
+        /* スタンプ押印枠 (未クリア) */
         .mh-stamp {
-            position: absolute;
-            right: 0mm;
-            top: 50%;
-            transform: translateY(-50%) rotate(-15deg);
-            color: #b91c1c;
-            border: 1.5px solid #b91c1c;
+            flex-shrink: 0;
+            margin-left: 1mm;
+            color: rgba(139, 107, 74, 0.8);
+            border: 1px dashed rgba(139, 107, 74, 0.8);
             border-radius: 2px;
             font-family: 'Oswald', sans-serif;
             font-weight: 700;
-            font-size: 5.5pt;
-            padding: 0px 3px;
-            background: rgba(220, 184, 139, 0.9); /* 文字の上にかぶさるように不透明度を高めに */
-            box-shadow: 0 0 2px rgba(185, 28, 28, 0.3);
+            font-size: 5pt;
+            padding: 1px 3px;
+            background: transparent;
             pointer-events: none;
-            z-index: 5;
             letter-spacing: 0.5px;
-        }
-
-        /* 情報項目 */
-        .mh-info-group {
-            display: flex;
-            flex-direction: column;
-        }
-        .mh-info-val {
-            font-size: 6.5pt;
-            font-weight: 800;
-            padding-left: 2mm;
-            border-bottom: 1px solid rgba(42, 27, 18, 0.2);
-            color: #2a1b12;
-            white-space: nowrap;
-            overflow: hidden;
         }
 
         /* 報酬金エリア */
@@ -242,7 +244,7 @@
             color: #2a1b12;
         }
 
-        /* 印刷設定 (世界観維持のため背景色をそのまま印刷) */
+        /* 印刷設定 */
         @media print {
             @page { size: A4 portrait; margin: 0; }
             html, body { 
@@ -266,14 +268,12 @@
                 width: 95mm !important; 
                 height: 68mm !important;
                 box-shadow: none !important;
-                /* 背景を維持 */
                 background-color: #dcb88b !important;
             }
         }
 
         [contenteditable="true"]:focus { background: rgba(139, 0, 0, 0.1); border-radius: 2px; }
 
-        /* UIエディター部分のスタイル変更 */
         .pool-item textarea {
             width: 100%; height: 100%; background: transparent; color: #e2e8f0;
             font-size: 0.8rem; text-align: center; resize: none; outline: none; flex-grow: 1; font-weight: bold; line-height: 1.4;
@@ -286,19 +286,17 @@
 </head>
 <body>
 
-    <!-- ギルド風のUIカラーに変更 -->
     <div class="no-print bg-stone-900 border border-stone-700 p-4 rounded-xl shadow-2xl">
         <div class="flex flex-wrap justify-between items-center gap-4">
             <div>
                 <h2 class="text-amber-500 font-bold mb-1 flex items-center gap-2 font-[Shippori Mincho] tracking-wider text-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
-                    GW QUEST GENERATOR v3.6
+                    GW SELLING QUEST GENERATOR v4.5
                 </h2>
                 <p class="text-xs text-stone-400 font-sans">ギルドのクエスト受注書風デザイン（背景の印刷設定をONにしてください）</p>
             </div>
             <div class="flex flex-wrap gap-2 items-center font-sans">
                 
-                <!-- クラウド同期インジケーター -->
                 <div class="bg-stone-800 text-stone-400 px-3 py-1.5 text-xs font-bold rounded border border-stone-600 flex items-center gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
                     <span id="sync-status">Firebase未接続</span>
@@ -306,18 +304,17 @@
 
                 <div class="h-6 w-px bg-stone-700 mx-1"></div>
                 <button onclick="openBackupModal()" class="bg-stone-800 hover:bg-stone-700 text-amber-200 px-3 py-1.5 text-xs font-bold rounded border border-stone-600 transition-all">データ引継ぎ</button>
-                <button onclick="openPoolEditor()" class="bg-amber-900/50 hover:bg-amber-800 text-amber-300 px-3 py-1.5 text-xs font-bold rounded border border-amber-700/50 transition-all">依頼内容編集</button>
-                <button onclick="regenerateCards()" class="bg-gradient-to-r from-red-800 to-red-700 hover:from-red-700 hover:to-red-600 text-amber-100 px-5 py-1.5 text-xs font-black rounded transition-all shadow-lg border border-red-900">クエスト受注</button>
+                <button onclick="openPoolEditor()" class="bg-amber-900/50 hover:bg-amber-800 text-amber-300 px-3 py-1.5 text-xs font-bold rounded border border-amber-700/50 transition-all">編集</button>
+                <button onclick="regenerateCards()" class="bg-gradient-to-r from-red-800 to-red-700 hover:from-red-700 hover:to-red-600 text-amber-100 px-5 py-1.5 text-xs font-black rounded transition-all shadow-lg border border-red-900">カードを生成</button>
                 <button onclick="window.print()" class="bg-stone-200 text-stone-900 font-black px-6 py-1.5 rounded text-xs ml-2 hover:bg-white transition-all shadow-md">印刷する</button>
             </div>
         </div>
     </div>
 
-    <!-- プール編集モーダル -->
     <div id="pool-editor-modal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50 font-sans">
         <div class="bg-stone-900 p-6 rounded-xl border border-amber-700/50 shadow-2xl w-11/12 max-w-7xl h-[90vh] flex flex-col">
             <h3 class="text-xl font-bold text-amber-500 mb-2 font-[Shippori Mincho]">MISSION POOL EDITOR</h3>
-            <p class="text-xs text-stone-400 mb-2">編集内容はクラウドに自動保存され、全員に共有されます。</p>
+            <p class="text-xs text-stone-400 mb-2">編集内容はクラウドに自動保存されます。</p>
             <div class="flex gap-2 mb-2 border-b border-stone-700 pb-2 overflow-x-auto">
                 <button onclick="switchPoolTab('fixed_sales')" id="tab-fixed_sales" class="px-4 py-2 text-xs font-bold rounded-t bg-amber-700 text-amber-100">1行目：販売(固定)</button>
                 <button onclick="switchPoolTab('sales_focus')" id="tab-sales_focus" class="px-4 py-2 text-xs font-bold rounded-t text-stone-400 hover:bg-stone-800">2・3行目：販売フォーカス</button>
@@ -332,7 +329,6 @@
         </div>
     </div>
 
-    <!-- データ引継ぎセンター -->
     <div id="backup-modal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50 font-sans">
         <div class="bg-stone-900 p-6 rounded-xl border border-stone-600 shadow-2xl w-11/12 max-w-4xl flex flex-col">
             <div class="flex justify-between items-center mb-5 border-b border-stone-700 pb-3 text-amber-500 font-bold font-[Shippori Mincho]">DATA TRANSFER</div>
@@ -362,20 +358,17 @@
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =====================================================================
-        // 【重要】Firebaseの設定をここに貼り付けます
+        // Firebase Config
         // =====================================================================
         const firebaseConfig = {
-            // apiKey: "ここに貼り付け",
-            // authDomain: "ここに貼り付け",
-            // projectId: "ここに貼り付け",
-            // storageBucket: "ここに貼り付け",
-            // messagingSenderId: "ここに貼り付け",
-            // appId: "ここに貼り付け"
+            apiKey: "",
+            authDomain: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
         };
-        // =====================================================================
 
-
-        // デフォルトデータ
         const defaultPools = {
             fixed_sales: ["APP (ORI) 販売", "APP (BOS) 販売", "FTW (ORI) 販売", "FTW (BOS) 販売", "今日の推しアイテム販売"],
             sales_focus: ["女性のお客様に販売", "男性のお客様に販売", "BTM 商品販売", "ご家族連れに販売", "APP フィッティング", "FTW フィッティング", "＋1点(追加)の販売クリア", "自分の靴と同じサイズ販売", "自分のAPPと同じサイズ販売", "マネキン着用アイテム販売", "代替案を提示しフィッティング", "複数のお客様を同時に接客", "SSQでSランク以上を獲得"],
@@ -384,8 +377,7 @@
         };
 
         const defaultConfigs = {
-            title: "GW LIMITED QUEST",
-            subtitle: "YOUR STORE / GW ONLY",
+            title: "GW SELLING QUEST",
             player_placeholder: "NAME",
             date_placeholder: "00/00"
         };
@@ -400,8 +392,6 @@
         async function initFirebase() {
             if (!firebaseConfig.apiKey) {
                 document.getElementById('sync-status').innerText = "ローカル動作(保存なし)";
-                document.getElementById('sync-status').parentElement.classList.replace('text-stone-400', 'text-amber-500');
-                document.getElementById('sync-status').parentElement.classList.replace('border-stone-600', 'border-amber-600');
                 loadAllDataLocal();
                 if (generatedCards.length === 0) regenerateCards();
                 else renderAllCards();
@@ -419,16 +409,13 @@
                     currentUser = user;
                     if (user) {
                         docRef = doc(db, 'gw_ticket_data', 'shared_state');
-                        
                         document.getElementById('sync-status').innerText = "クラウド同期ON";
-                        document.getElementById('sync-status').parentElement.classList.replace('text-amber-500', 'text-green-500');
-                        document.getElementById('sync-status').parentElement.classList.replace('border-amber-600', 'border-green-600');
 
                         onSnapshot(docRef, async (snap) => {
                             if (!snap.exists()) {
-                                const localCards = localStorage.getItem('gw_v3_6_cards') || localStorage.getItem('gw_v3_5_cards');
-                                const localPools = localStorage.getItem('gw_v3_6_pools') || localStorage.getItem('gw_v3_5_pools');
-                                const localConfig = localStorage.getItem('gw_v3_6_config') || localStorage.getItem('gw_v3_5_config');
+                                const localCards = localStorage.getItem('gw_v4_1_cards') || localStorage.getItem('gw_v4_0_cards');
+                                const localPools = localStorage.getItem('gw_v4_1_pools') || localStorage.getItem('gw_v4_0_pools');
+                                const localConfig = localStorage.getItem('gw_v4_1_config') || localStorage.getItem('gw_v4_0_config');
                                 
                                 let initialData = {
                                     pools: localPools ? JSON.parse(localPools) : JSON.parse(JSON.stringify(defaultPools)),
@@ -439,7 +426,6 @@
                                 await setDoc(docRef, initialData); 
                                 
                                 pools = initialData.pools;
-                                localStorage.setItem('gw_v3_6_config', JSON.stringify(initialData.config));
                                 if (initialData.cards) {
                                     generatedCards = JSON.parse(initialData.cards);
                                     renderAllCards();
@@ -449,20 +435,16 @@
                             } else if (!isEditing) {
                                 const data = snap.data();
                                 if (data.pools) pools = data.pools;
-                                if (data.config) localStorage.setItem('gw_v3_6_config', JSON.stringify(data.config));
+                                if (data.config) localStorage.setItem('gw_v4_1_config', JSON.stringify(data.config));
                                 if (data.cards) {
                                     generatedCards = JSON.parse(data.cards);
                                     renderAllCards();
                                 }
                             }
-                        }, (err) => {
-                            document.getElementById('sync-status').innerText = "同期エラー";
-                            document.getElementById('sync-status').parentElement.classList.replace('text-green-500', 'text-red-500');
                         });
                     }
                 });
             } catch (e) {
-                document.getElementById('sync-status').innerText = "設定エラー";
                 loadAllDataLocal();
                 if (generatedCards.length === 0) regenerateCards();
                 else renderAllCards();
@@ -488,7 +470,7 @@
         }
 
         function regenerateCards() {
-            if (generatedCards.length > 0 && !confirm("クエスト内容を再受注（リセット）しますか？")) return;
+            if (generatedCards.length > 0 && !confirm("クエスト内容を再受注しますか？")) return;
             isEditing = true; 
             generatedCards = [];
             for (let i = 0; i < 8; i++) {
@@ -501,27 +483,21 @@
                 cardData.push({ text: getSafeString(getRandomSubset(pools.others, 1)[0]) });
                 generatedCards.push(cardData);
             }
-            localStorage.setItem('gw_v3_6_cards', JSON.stringify(generatedCards));
-            
-            saveToCloud({ cards: JSON.stringify(generatedCards) }).then(() => {
-                isEditing = false;
-            });
+            localStorage.setItem('gw_v4_1_cards', JSON.stringify(generatedCards));
+            saveToCloud({ cards: JSON.stringify(generatedCards) }).then(() => { isEditing = false; });
             renderAllCards();
         }
 
         function getSafeString(data) {
             if (!data) return "";
-            let text = "";
-            if (typeof data === 'string') text = data;
-            else if (typeof data === 'object' && data.text) text = data.text;
-            else text = String(data);
+            let text = (typeof data === 'string') ? data : (data.text || String(data));
             return text.replace(/\n/g, '').replace(/<br>/g, '');
         }
 
         function renderAllCards() {
             const container = document.getElementById('print-container');
             container.innerHTML = '';
-            const config = JSON.parse(localStorage.getItem('gw_v3_6_config') || JSON.stringify(defaultConfigs));
+            const config = JSON.parse(localStorage.getItem('gw_v4_1_config') || JSON.stringify(defaultConfigs));
 
             generatedCards.forEach((cardData, cardIdx) => {
                 const card = document.createElement('div');
@@ -529,14 +505,13 @@
 
                 let missionHTML = '';
                 cardData.forEach((cell, cellIdx) => {
-                    const cellText = getSafeString(cell.text);
                     missionHTML += `
                         <div class="mh-mission">
                             <div class="mh-mission-number">${cellIdx + 1}</div>
                             <div class="mission-text outline-none" contenteditable="true" data-card="${cardIdx}" data-cell="${cellIdx}">
-                                ${cellText}
+                                ${getSafeString(cell.text)}
                             </div>
-                            <div class="mh-stamp">CLEAR!</div>
+                            <div class="mh-stamp">STAMP</div>
                         </div>
                     `;
                 });
@@ -546,38 +521,28 @@
                         <div class="mh-title-wrapper">
                             <div class="mh-title sync-text outline-none" contenteditable="true" data-sync-key="title">${config.title}</div>
                         </div>
-                        <div class="mh-difficulty">
-                            ★ ★ ★ ★ <span class="mh-star-empty">☆</span>
+                        <div class="mh-header-info">
+                            <div class="mh-header-info-row">
+                                <span class="mh-header-label">NAME:</span>
+                                <span class="mh-header-val sync-text outline-none" contenteditable="true" data-sync-key="player_placeholder">${config.player_placeholder}</span>
+                            </div>
+                            <div class="mh-header-info-row">
+                                <span class="mh-header-label">DATE:</span>
+                                <span class="mh-header-val sync-text outline-none" contenteditable="true" data-sync-key="date_placeholder">${config.date_placeholder}</span>
+                            </div>
                         </div>
                     </div>
-                    
                     <div class="mh-body">
                         <div class="mh-left">
                             <div class="mh-section-title"><span class="mh-icon">▶</span> 成功条件 (TARGETS)</div>
                             <div class="mission-list">${missionHTML}</div>
                         </div>
-                        
                         <div class="mh-right">
-                            <div class="mh-info-group">
-                                <div class="mh-section-title"><span class="mh-icon">▶</span> 目的地 (DESTINY)</div>
-                                <div class="mh-info-val sync-text outline-none" contenteditable="true" data-sync-key="subtitle">${config.subtitle}</div>
-                            </div>
-                            
-                            <div class="mh-info-group">
-                                <div class="mh-section-title"><span class="mh-icon">▶</span> 受注者 (HUNTER)</div>
-                                <div class="mh-info-val sync-text outline-none" contenteditable="true" data-sync-key="player_placeholder">${config.player_placeholder}</div>
-                            </div>
-
-                            <div class="mh-info-group">
-                                <div class="mh-section-title"><span class="mh-icon">▶</span> 期限 (DATE)</div>
-                                <div class="mh-info-val sync-text outline-none" contenteditable="true" data-sync-key="date_placeholder">${config.date_placeholder}</div>
-                            </div>
-
                             <div class="mh-info-group mh-reward">
-                                <div class="mh-section-title"><span class="mh-icon">▶</span> 報酬金 (REWARD)</div>
+                                <div class="mh-section-title"><span class="mh-icon">▶</span> CLEAR POINT</div>
                                 <div class="mh-info-val mh-score-row">
                                     <span class="score-input-box outline-none" contenteditable="true"></span>
-                                    <span class="mh-unit">/ 25z</span>
+                                    <span class="mh-unit">/ 25P</span>
                                 </div>
                             </div>
                         </div>
@@ -586,50 +551,33 @@
 
                 card.querySelectorAll('.mission-text').forEach(el => {
                     setTimeout(() => autoFitText(el), 0);
-                    
-                    el.addEventListener('keydown', function(e) { if(e.key === 'Enter') e.preventDefault(); });
                     el.addEventListener('focus', () => { isEditing = true; }); 
-                    
                     el.addEventListener('input', function() {
                         const plainText = this.innerText.replace(/\n/g, '');
                         generatedCards[this.dataset.card][this.dataset.cell].text = plainText;
-                        localStorage.setItem('gw_v3_6_cards', JSON.stringify(generatedCards));
+                        localStorage.setItem('gw_v4_1_cards', JSON.stringify(generatedCards));
                         autoFitText(this);
                     });
-
                     el.addEventListener('blur', () => {
-                        saveToCloud({ cards: JSON.stringify(generatedCards) }).then(() => {
-                            isEditing = false;
-                        });
+                        saveToCloud({ cards: JSON.stringify(generatedCards) }).then(() => { isEditing = false; });
                     });
                 });
 
                 card.querySelectorAll('.sync-text').forEach(el => {
                     el.addEventListener('focus', () => { isEditing = true; });
-                    
                     el.addEventListener('input', function() { 
                         const key = this.dataset.syncKey;
-                        const htmlContent = this.innerHTML;
-                        const cfg = JSON.parse(localStorage.getItem('gw_v3_6_config') || '{}');
-                        cfg[key] = htmlContent;
-                        localStorage.setItem('gw_v3_6_config', JSON.stringify(cfg)); 
-                        
+                        const cfg = JSON.parse(localStorage.getItem('gw_v4_1_config') || '{}');
+                        cfg[key] = this.innerHTML;
+                        localStorage.setItem('gw_v4_1_config', JSON.stringify(cfg)); 
                         document.querySelectorAll(`.sync-text[data-sync-key="${key}"]`).forEach(target => {
-                            if (target !== document.activeElement) target.innerHTML = htmlContent;
+                            if (target !== document.activeElement) target.innerHTML = this.innerHTML;
                         });
                     });
-
                     el.addEventListener('blur', () => {
-                        const cfg = JSON.parse(localStorage.getItem('gw_v3_6_config'));
-                        saveToCloud({ config: cfg }).then(() => {
-                            isEditing = false;
-                        });
+                        const cfg = JSON.parse(localStorage.getItem('gw_v4_1_config'));
+                        saveToCloud({ config: cfg }).then(() => { isEditing = false; });
                     });
-                });
-
-                card.querySelectorAll('.score-input-box').forEach(el => {
-                    el.addEventListener('focus', () => { isEditing = true; });
-                    el.addEventListener('blur', () => { isEditing = false; });
                 });
 
                 container.appendChild(card);
@@ -640,20 +588,17 @@
             let size = 7.5; 
             el.style.fontSize = size + 'pt';
             el.style.whiteSpace = 'nowrap'; 
-            el.style.wordBreak = 'normal';
             while (el.scrollWidth > el.clientWidth && size > 5.0) {
                 size -= 0.25; el.style.fontSize = size + 'pt';
             }
             if (el.scrollWidth > el.clientWidth) {
-                el.style.whiteSpace = 'normal'; el.style.wordBreak = 'break-word';
-                const maxHeight = el.parentElement.clientHeight - 1; 
-                while (el.scrollHeight > maxHeight && size > 4.5) {
+                el.style.whiteSpace = 'normal';
+                while (el.scrollHeight > el.parentElement.clientHeight - 1 && size > 4.5) {
                     size -= 0.25; el.style.fontSize = size + 'pt';
                 }
             }
         }
 
-        // --- エディターの制御 ---
         function openPoolEditor() {
             isEditing = true; 
             document.getElementById('pool-editor-modal').classList.remove('hidden');
@@ -663,46 +608,27 @@
 
         function closePoolEditor() { 
             document.getElementById('pool-editor-modal').classList.add('hidden'); 
-            document.getElementById('pool-editor-modal').classList.remove('flex');
-            saveToCloud({ pools: pools }).then(() => {
-                isEditing = false;
-            });
+            saveToCloud({ pools: pools }).then(() => { isEditing = false; });
         }
 
         function switchPoolTab(tab) {
             currentTab = tab;
             ['fixed_sales', 'sales_focus', 'emm_next', 'others'].forEach(t => {
-                const btn = document.getElementById('tab-' + t);
-                btn.className = (t === tab) ? "px-4 py-2 text-xs font-bold rounded-t bg-amber-700 text-amber-100" : "px-4 py-2 text-xs font-bold rounded-t text-stone-400 hover:bg-stone-800";
+                document.getElementById('tab-' + t).className = (t === tab) ? "px-4 py-2 text-xs font-bold rounded-t bg-amber-700 text-amber-100" : "px-4 py-2 text-xs font-bold rounded-t text-stone-400 hover:bg-stone-800";
             });
             const container = document.getElementById('pool-items-container');
             container.innerHTML = '';
-            
-            if (!pools[tab]) pools[tab] = [];
-            
-            pools[tab].forEach((item, index) => {
-                const text = getSafeString(item); 
+            (pools[tab] || []).forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'pool-item';
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                
-                textarea.addEventListener('keydown', function(e) { if(e.key === 'Enter') e.preventDefault(); });
-                
-                textarea.addEventListener('input', function() { 
-                    this.value = this.value.replace(/\n/g, ''); 
-                    pools[tab][index] = this.value; 
-                    localStorage.setItem('gw_v3_6_pools', JSON.stringify(pools));
-                });
-                div.appendChild(textarea);
-                const del = document.createElement('div');
-                del.className = 'pool-item-delete'; del.innerHTML = '×';
-                del.onclick = () => { pools[tab].splice(index, 1); switchPoolTab(tab); };
-                div.appendChild(del);
+                div.innerHTML = `<textarea>${getSafeString(item)}</textarea><div class="pool-item-delete">×</div>`;
+                const tx = div.querySelector('textarea');
+                tx.addEventListener('input', function() { pools[tab][index] = this.value; localStorage.setItem('gw_v4_1_pools', JSON.stringify(pools)); });
+                div.querySelector('.pool-item-delete').onclick = () => { pools[tab].splice(index, 1); switchPoolTab(tab); };
                 container.appendChild(div);
             });
             const add = document.createElement('div');
-            add.className = 'border-2 border-dashed border-stone-600 rounded-lg flex items-center justify-center p-4 cursor-pointer hover:border-amber-600 text-stone-500 hover:text-amber-500 min-h-[80px]';
+            add.className = 'border-2 border-dashed border-stone-600 rounded-lg flex items-center justify-center p-4 cursor-pointer hover:border-amber-500 text-stone-500 hover:text-amber-500 min-h-[80px]';
             add.innerHTML = `<span class="text-xs font-bold">+ 追加</span>`;
             add.onclick = () => { pools[tab].push("新ミッション"); switchPoolTab(tab); };
             container.appendChild(add);
@@ -715,66 +641,43 @@
         }
 
         function loadAllDataLocal() {
-            const config = localStorage.getItem('gw_v3_6_config') || localStorage.getItem('gw_v3_5_config');
-            if (config) localStorage.setItem('gw_v3_6_config', JSON.stringify({ ...defaultConfigs, ...JSON.parse(config) }));
-            else localStorage.setItem('gw_v3_6_config', JSON.stringify(defaultConfigs));
-            
-            const p = localStorage.getItem('gw_v3_6_pools') || localStorage.getItem('gw_v3_5_pools');
-            if (p) pools = JSON.parse(p);
-            else pools = JSON.parse(JSON.stringify(defaultPools));
-
-            const c = localStorage.getItem('gw_v3_6_cards') || localStorage.getItem('gw_v3_5_cards');
-            if(c) generatedCards = JSON.parse(c);
+            pools = JSON.parse(localStorage.getItem('gw_v4_1_pools') || localStorage.getItem('gw_v4_0_pools') || JSON.stringify(defaultPools));
+            const cfg = JSON.parse(localStorage.getItem('gw_v4_1_config') || localStorage.getItem('gw_v4_0_config') || JSON.stringify(defaultConfigs));
+            localStorage.setItem('gw_v4_1_config', JSON.stringify(cfg));
+            generatedCards = JSON.parse(localStorage.getItem('gw_v4_1_cards') || localStorage.getItem('gw_v4_0_cards') || "[]");
         }
 
-        function openBackupModal() { document.getElementById('backup-modal').classList.remove('hidden'); document.getElementById('backup-modal').classList.add('flex'); document.getElementById('export-text-area').value = btoa(encodeURIComponent(JSON.stringify({ pools, config: JSON.parse(localStorage.getItem('gw_v3_6_config')), cards: localStorage.getItem('gw_v3_6_cards') })).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode('0x' + p1))); }
+        function openBackupModal() { 
+            document.getElementById('backup-modal').classList.remove('hidden'); 
+            document.getElementById('backup-modal').classList.add('flex'); 
+            document.getElementById('export-text-area').value = btoa(encodeURIComponent(JSON.stringify({ pools, config: JSON.parse(localStorage.getItem('gw_v4_1_config')), cards: localStorage.getItem('gw_v4_1_cards') })).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode('0x' + p1))); 
+        }
         function closeBackupModal() { document.getElementById('backup-modal').classList.add('hidden'); }
-        function copyExportText() { document.getElementById('export-text-area').select(); document.execCommand('copy'); alert('コピー成功'); }
+        function copyExportText() { document.getElementById('export-text-area').select(); document.execCommand('copy'); alert('コピー完了'); }
         function importFromText() {
-            const text = document.getElementById('import-text-area').value.trim();
-            if(!text) return;
-            try { 
-                const data = JSON.parse(decodeURIComponent(atob(text).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
-                if (data.pools) pools = data.pools;
-                if (data.config) localStorage.setItem('gw_v3_6_config', JSON.stringify(data.config));
-                if (data.cards) localStorage.setItem('gw_v3_6_cards', data.cards);
-                saveToCloud({ pools: pools, config: data.config, cards: data.cards }).then(() => {
-                    alert("復元完了"); location.reload();
-                });
+            try {
+                const data = JSON.parse(decodeURIComponent(atob(document.getElementById('import-text-area').value).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+                pools = data.pools; localStorage.setItem('gw_v4_1_config', JSON.stringify(data.config)); localStorage.setItem('gw_v4_1_cards', data.cards);
+                saveToCloud({ pools, config: data.config, cards: data.cards }).then(() => location.reload());
             } catch(e) { alert('失敗'); }
         }
         function exportToFile() {
-            const blob = new Blob([JSON.stringify({ pools, config: JSON.parse(localStorage.getItem('gw_v3_6_config')), cards: localStorage.getItem('gw_v3_6_cards') })], {type: "application/json"});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "guild_quest_data.json"; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ pools, config: JSON.parse(localStorage.getItem('gw_v4_1_config')), cards: localStorage.getItem('gw_v4_1_cards') })])); a.download = "quest_data.json"; a.click();
         }
         function importFromFile(input) {
             const reader = new FileReader();
             reader.onload = e => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.pools) pools = data.pools;
-                    if (data.config) localStorage.setItem('gw_v3_6_config', JSON.stringify(data.config));
-                    if (data.cards) localStorage.setItem('gw_v3_6_cards', data.cards);
-                    saveToCloud({ pools: pools, config: data.config, cards: data.cards }).then(() => {
-                        alert("復元完了"); location.reload();
-                    });
-                } catch(err) { alert("無効なファイルです"); }
+                const data = JSON.parse(e.target.result);
+                pools = data.pools; localStorage.setItem('gw_v4_1_config', JSON.stringify(data.config)); localStorage.setItem('gw_v4_1_cards', data.cards);
+                saveToCloud({ pools, config: data.config, cards: data.cards }).then(() => location.reload());
             };
             reader.readAsText(input.files[0]);
         }
 
-        window.openPoolEditor = openPoolEditor;
-        window.closePoolEditor = closePoolEditor;
-        window.switchPoolTab = switchPoolTab;
-        window.resetPoolToDefault = resetPoolToDefault;
-        window.regenerateCards = regenerateCards;
-        window.openBackupModal = openBackupModal;
-        window.closeBackupModal = closeBackupModal;
-        window.copyExportText = copyExportText;
-        window.importFromText = importFromText;
-        window.exportToFile = exportToFile;
-        window.importFromFile = importFromFile;
-
+        window.openPoolEditor = openPoolEditor; window.closePoolEditor = closePoolEditor; window.switchPoolTab = switchPoolTab;
+        window.resetPoolToDefault = resetPoolToDefault; window.regenerateCards = regenerateCards; window.openBackupModal = openBackupModal;
+        window.closeBackupModal = closeBackupModal; window.copyExportText = copyExportText; window.importFromText = importFromText;
+        window.exportToFile = exportToFile; window.importFromFile = importFromFile;
     </script>
 </body>
 </html>
